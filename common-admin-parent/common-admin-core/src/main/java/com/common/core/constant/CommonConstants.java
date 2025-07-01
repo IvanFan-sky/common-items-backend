@@ -3,10 +3,9 @@ package com.common.core.constant;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * 通用常量
- * 
- * @author common-admin
- * @since 2024-01-01
+ * @Description 通用常量定义，包含响应码、状态码、默认值等系统常量
+ * @Date 2025/1/7 12:16
+ * @Author SparkFan
  */
 @Schema(description = "通用常量定义")
 public interface CommonConstants {

@@ -11,10 +11,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
- * MyBatis Plus配置
- *
- * @author ${author}
- * @since ${date}
+ * @Description MyBatis Plus配置类，包含分页插件、乐观锁插件等
+ * @Date 2025/1/7 12:16
+ * @Author SparkFan
  */
 @Configuration
 @EnableTransactionManagement

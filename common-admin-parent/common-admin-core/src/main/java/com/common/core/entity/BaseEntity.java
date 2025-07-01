@@ -9,11 +9,9 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 基础实体类
- * 包含所有实体类的公共字段
- * 
- * @author common-admin
- * @since 2024-01-01
+ * @Description 基础实体类，包含所有实体类的公共字段如ID、创建时间、更新时间等
+ * @Date 2025/1/7 12:16
+ * @Author SparkFan
  */
 @Data
 @Schema(description = "基础实体类")

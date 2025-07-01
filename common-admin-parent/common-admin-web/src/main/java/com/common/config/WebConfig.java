@@ -9,10 +9,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 
 /**
- * Web配置
- *
- * @author ${author}
- * @since ${date}
+ * @Description Web配置类，配置跨域、静态资源映射等
+ * @Date 2025/1/7 12:16
+ * @Author SparkFan
  */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {

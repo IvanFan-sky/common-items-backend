@@ -5,10 +5,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 业务异常
- * 
- * @author common-admin
- * @since 2024-01-01
+ * @Description 业务异常类，用于处理系统业务逻辑相关的异常情况
+ * @Date 2025/1/7 12:16
+ * @Author SparkFan
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

@@ -8,10 +8,9 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Sa-Token权限认证配置
- *
- * @author ${author}
- * @since ${date}
+ * @Description Sa-Token权限认证配置，配置登录校验和路由拦截规则
+ * @Date 2025/1/7 12:16
+ * @Author SparkFan
  */
 @Configuration
 public class SaTokenConfig implements WebMvcConfigurer {

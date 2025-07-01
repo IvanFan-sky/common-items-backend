@@ -6,11 +6,9 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 基础查询对象
- * 包含分页和排序参数
- * 
- * @author common-admin
- * @since 2024-01-01
+ * @Description 基础查询对象，包含分页和排序参数，为所有查询DTO的基类
+ * @Date 2025/1/7 12:16
+ * @Author SparkFan
  */
 @Data
 @Schema(description = "基础查询对象")

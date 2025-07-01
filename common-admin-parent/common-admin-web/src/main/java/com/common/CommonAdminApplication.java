@@ -7,10 +7,9 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * 通用管理系统启动类
- * 
- * @author common-admin
- * @since 2024-01-01
+ * @Description 通用管理系统启动类，Spring Boot应用程序入口
+ * @Date 2025/1/7 12:16
+ * @Author SparkFan
  */
 @SpringBootApplication
 @EnableAsync

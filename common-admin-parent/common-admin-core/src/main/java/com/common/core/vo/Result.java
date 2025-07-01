@@ -7,10 +7,9 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 统一响应结果
- * 
- * @author common-admin
- * @since 2024-01-01
+ * @Description 统一响应结果，用于包装所有API接口的返回数据
+ * @Date 2025/1/7 12:16
+ * @Author SparkFan
  */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)

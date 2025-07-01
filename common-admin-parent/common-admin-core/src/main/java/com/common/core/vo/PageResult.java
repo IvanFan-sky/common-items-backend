@@ -9,10 +9,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * 分页响应结果
- * 
- * @author common-admin
- * @since 2024-01-01
+ * @Description 分页响应结果，用于包装分页查询返回的数据
+ * @Date 2025/1/7 12:16
+ * @Author SparkFan
  */
 @Data
 @Schema(description = "分页响应结果")

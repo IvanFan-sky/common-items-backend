@@ -19,10 +19,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
- * 全局异常处理器
- *
- * @author ${author}
- * @since ${date}
+ * @Description 全局异常处理器，统一处理系统中的各种异常
+ * @Date 2025/1/7 12:16
+ * @Author SparkFan
  */
 @Slf4j
 @RestControllerAdvice

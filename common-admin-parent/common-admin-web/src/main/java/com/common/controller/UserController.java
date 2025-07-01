@@ -13,6 +13,7 @@ import com.common.core.vo.*;
 import com.common.core.vo.auth.LoginVO;
 import com.common.core.vo.user.UserDetailVO;
 import com.common.core.vo.user.UserVO;
+import com.common.core.vo.user.UserProfileVO;
 import com.common.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,8 +21,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -495,6 +498,263 @@ public class UserController {
         } catch (Exception e) {
             log.error("获取账户锁定状态失败，标识：{}", identifier, e);
             return Result.error("获取锁定状态失败");
+        }
+    }
+
+    // ==================== 导入导出功能 ====================
+
+    /**
+     * 导出用户数据
+     */
+    @PostMapping("/export")
+    @Operation(summary = "导出用户", description = "根据查询条件导出用户数据到Excel")
+    @SaCheckPermission("user:export")
+    public void exportUsers(@RequestBody(required = false) com.common.core.dto.user.UserQueryDTO queryDTO, 
+                           HttpServletResponse response) {
+        try {
+            List<com.common.core.vo.user.UserExportVO> exportData = userService.exportUsers(queryDTO);
+            com.common.core.util.ExcelUtils.exportExcel(response, exportData, 
+                com.common.core.vo.user.UserExportVO.class, "用户数据");
+        } catch (Exception e) {
+            log.error("导出用户数据失败", e);
+            throw new RuntimeException("导出失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 下载用户导入模板
+     */
+    @GetMapping("/import/template")
+    @Operation(summary = "下载导入模板", description = "下载用户导入Excel模板")
+    @SaCheckPermission("user:import")
+    public void downloadImportTemplate(HttpServletResponse response) {
+        try {
+            List<com.common.core.dto.user.UserImportDTO> templateData = userService.getUserImportTemplate();
+            com.common.core.util.ExcelUtils.exportExcel(response, templateData, 
+                com.common.core.dto.user.UserImportDTO.class, "用户导入模板");
+        } catch (Exception e) {
+            log.error("下载用户导入模板失败", e);
+            throw new RuntimeException("下载模板失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 导入用户数据
+     */
+    @PostMapping("/import")
+    @Operation(summary = "导入用户", description = "从Excel文件导入用户数据")
+    @SaCheckPermission("user:import")
+    public Result<com.common.core.vo.ImportResultVO> importUsers(
+            @RequestParam("file") MultipartFile file) {
+        
+        // 验证文件
+        if (file == null || file.isEmpty()) {
+            return Result.error("请选择要导入的文件");
+        }
+        
+        if (!com.common.core.util.ExcelUtils.isExcelFile(file)) {
+            return Result.error("请上传Excel文件（.xlsx或.xls格式）");
+        }
+        
+        // 文件大小限制（10MB）
+        if (!com.common.core.util.ExcelUtils.isValidFileSize(file, 10 * 1024 * 1024)) {
+            return Result.error("文件大小不能超过10MB");
+        }
+        
+        try {
+            // 读取Excel数据
+            List<com.common.core.dto.user.UserImportDTO> importDataList = 
+                com.common.core.util.ExcelUtils.importExcel(file, com.common.core.dto.user.UserImportDTO.class);
+            
+            if (importDataList.isEmpty()) {
+                return Result.error("文件中没有有效数据");
+            }
+            
+            // 获取当前登录用户ID
+            Long currentUserId = getCurrentUserId();
+            
+            // 执行导入
+            com.common.core.vo.ImportResultVO result = userService.importUsers(importDataList, currentUserId);
+            
+            return Result.success(result);
+            
+        } catch (Exception e) {
+            log.error("导入用户数据失败", e);
+            return Result.error("导入失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取当前登录用户ID
+     */
+    private Long getCurrentUserId() {
+        try {
+            return StpUtil.getLoginIdAsLong();
+        } catch (Exception e) {
+            throw new RuntimeException("获取当前用户信息失败");
+        }
+    }
+
+    // ==================== 个人信息管理功能 ====================
+
+    /**
+     * 获取个人资料
+     */
+    @GetMapping("/profile")
+    @Operation(summary = "获取个人资料", description = "获取当前用户的个人资料信息")
+    public Result<UserProfileVO> getUserProfile() {
+        try {
+            Long userId = getCurrentUserId();
+            UserProfileVO profileVO = userService.getUserProfile(userId);
+            return Result.success(profileVO);
+        } catch (Exception e) {
+            log.error("获取个人资料失败", e);
+            return Result.error("获取个人资料失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 更新个人资料
+     */
+    @PutMapping("/profile")
+    @Operation(summary = "更新个人资料", description = "用户更新自己的个人资料")
+    public Result<Void> updateUserProfile(@Valid @RequestBody UserProfileUpdateDTO profileUpdateDTO) {
+        try {
+            Long userId = getCurrentUserId();
+            userService.updateUserProfile(userId, profileUpdateDTO);
+            return Result.success("个人资料更新成功");
+        } catch (Exception e) {
+            log.error("更新个人资料失败", e);
+            return Result.error("更新个人资料失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 更新头像
+     */
+    @PutMapping("/profile/avatar")
+    @Operation(summary = "更新头像", description = "用户更新自己的头像")
+    public Result<Void> updateUserAvatar(@Valid @RequestBody UserAvatarUpdateDTO avatarUpdateDTO) {
+        try {
+            Long userId = getCurrentUserId();
+            userService.updateUserAvatar(userId, avatarUpdateDTO);
+            return Result.success("头像更新成功");
+        } catch (Exception e) {
+            log.error("更新头像失败", e);
+            return Result.error("更新头像失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 更新安全设置
+     */
+    @PutMapping("/profile/security")
+    @Operation(summary = "更新安全设置", description = "用户更新自己的安全设置")
+    public Result<Void> updateUserSecuritySettings(@Valid @RequestBody UserSecuritySettingsDTO securitySettingsDTO) {
+        try {
+            Long userId = getCurrentUserId();
+            userService.updateUserSecuritySettings(userId, securitySettingsDTO);
+            return Result.success("安全设置更新成功");
+        } catch (Exception e) {
+            log.error("更新安全设置失败", e);
+            return Result.error("更新安全设置失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 验证当前密码
+     */
+    @PostMapping("/profile/password/verify")
+    @Operation(summary = "验证当前密码", description = "验证用户当前密码是否正确")
+    public Result<Boolean> verifyCurrentPassword(@RequestParam String currentPassword) {
+        try {
+            Long userId = getCurrentUserId();
+            Boolean isValid = userService.verifyCurrentPassword(userId, currentPassword);
+            return Result.success(isValid);
+        } catch (Exception e) {
+            log.error("验证当前密码失败", e);
+            return Result.error("验证失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 生成双因子认证密钥
+     */
+    @PostMapping("/profile/2fa/generate")
+    @Operation(summary = "生成双因子认证密钥", description = "生成用户的双因子认证密钥和二维码")
+    public Result<Map<String, String>> generateTwoFactorSecret() {
+        try {
+            Long userId = getCurrentUserId();
+            Map<String, String> result = userService.generateTwoFactorSecret(userId);
+            return Result.success(result);
+        } catch (Exception e) {
+            log.error("生成双因子认证密钥失败", e);
+            return Result.error("生成失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 验证双因子认证码
+     */
+    @PostMapping("/profile/2fa/verify")
+    @Operation(summary = "验证双因子认证码", description = "验证用户输入的双因子认证码")
+    public Result<Boolean> verifyTwoFactorCode(@RequestParam String code) {
+        try {
+            Long userId = getCurrentUserId();
+            Boolean isValid = userService.verifyTwoFactorCode(userId, code);
+            return Result.success(isValid);
+        } catch (Exception e) {
+            log.error("验证双因子认证码失败", e);
+            return Result.error("验证失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取登录历史
+     */
+    @GetMapping("/profile/login-history")
+    @Operation(summary = "获取登录历史", description = "获取用户的登录历史记录")
+    public Result<List<Map<String, Object>>> getUserLoginHistory(
+            @Parameter(description = "限制数量") @RequestParam(defaultValue = "10") Integer limit) {
+        try {
+            Long userId = getCurrentUserId();
+            List<Map<String, Object>> loginHistory = userService.getUserLoginHistory(userId, limit);
+            return Result.success(loginHistory);
+        } catch (Exception e) {
+            log.error("获取登录历史失败", e);
+            return Result.error("获取登录历史失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取设备信息
+     */
+    @GetMapping("/profile/devices")
+    @Operation(summary = "获取设备信息", description = "获取用户的登录设备信息")
+    public Result<List<Map<String, Object>>> getUserDevices() {
+        try {
+            Long userId = getCurrentUserId();
+            List<Map<String, Object>> devices = userService.getUserDevices(userId);
+            return Result.success(devices);
+        } catch (Exception e) {
+            log.error("获取设备信息失败", e);
+            return Result.error("获取设备信息失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 移除设备
+     */
+    @DeleteMapping("/profile/devices/{deviceId}")
+    @Operation(summary = "移除设备", description = "移除指定的登录设备")
+    public Result<Void> removeUserDevice(@Parameter(description = "设备ID") @PathVariable String deviceId) {
+        try {
+            Long userId = getCurrentUserId();
+            userService.removeUserDevice(userId, deviceId);
+            return Result.success("设备移除成功");
+        } catch (Exception e) {
+            log.error("移除设备失败", e);
+            return Result.error("移除设备失败：" + e.getMessage());
         }
     }
 } 

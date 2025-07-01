@@ -119,6 +119,45 @@ public class SysUser extends BaseEntity {
     @Schema(description = "最近登录时间", example = "2024-01-01 12:00:00")
     private LocalDateTime loginTime;
 
+    /**
+     * 最近登录IP（新字段）
+     */
+    @Size(max = 50, message = "最近登录IP长度不能超过50个字符")
+    @TableField("last_login_ip")
+    @Schema(description = "最近登录IP", example = "192.168.1.1")
+    private String lastLoginIp;
+
+    /**
+     * 最近登录时间（新字段）
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @TableField("last_login_time")
+    @Schema(description = "最近登录时间", example = "2024-01-01 12:00:00")
+    private LocalDateTime lastLoginTime;
+
+    /**
+     * 登录次数
+     */
+    @TableField("login_count")
+    @Schema(description = "登录次数", example = "10")
+    private Integer loginCount = 0;
+
+    /**
+     * 密码修改时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @TableField("password_update_time")
+    @Schema(description = "密码修改时间", example = "2024-01-01 12:00:00")
+    private LocalDateTime passwordUpdateTime;
+
+    /**
+     * 备注
+     */
+    @Size(max = 500, message = "备注长度不能超过500个字符")
+    @TableField("remark")
+    @Schema(description = "备注", example = "这是一个备注")
+    private String remark;
+
     // ==================== 业务方法 ====================
 
     /**

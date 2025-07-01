@@ -136,4 +136,24 @@ public class UserQueryDTO extends BaseQuery {
      */
     @Schema(description = "社交平台类型", example = "wechat")
     private String socialType;
+
+    /**
+     * 关键词（模糊搜索用户名、昵称、邮箱、手机号）
+     */
+    @Schema(description = "关键词", example = "admin")
+    private String keyword;
+
+    /**
+     * 排序字段
+     */
+    @Schema(description = "排序字段", example = "create_time", allowableValues = {
+            "create_time", "update_time", "last_login_time", "login_count", "username", "nickname"
+    })
+    private String sortField;
+
+    /**
+     * 排序方向
+     */
+    @Schema(description = "排序方向", example = "DESC", allowableValues = {"ASC", "DESC"})
+    private String sortOrder = "DESC";
 } 

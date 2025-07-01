@@ -1,4 +1,4 @@
-package com.common.core.vo;
+package com.common.core.vo.permission;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;

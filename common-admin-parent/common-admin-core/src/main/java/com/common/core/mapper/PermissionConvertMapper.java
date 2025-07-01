@@ -1,11 +1,11 @@
 package com.common.core.mapper;
 
-import com.common.core.dto.PermissionCreateDTO;
-import com.common.core.dto.PermissionQueryDTO;
-import com.common.core.dto.PermissionUpdateDTO;
+import com.common.core.dto.permission.PermissionCreateDTO;
+import com.common.core.dto.permission.PermissionQueryDTO;
+import com.common.core.dto.permission.PermissionUpdateDTO;
 import com.common.core.entity.SysPermission;
-import com.common.core.vo.PermissionTreeVO;
-import com.common.core.vo.PermissionVO;
+import com.common.core.vo.permission.PermissionTreeVO;
+import com.common.core.vo.permission.PermissionVO;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 

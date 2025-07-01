@@ -1,5 +1,6 @@
-package com.common.core.dto;
+package com.common.core.dto.role;
 
+import com.common.core.dto.BaseQuery;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

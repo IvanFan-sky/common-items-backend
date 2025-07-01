@@ -3,9 +3,9 @@ package com.common.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.common.core.dto.RoleQueryDTO;
+import com.common.core.dto.role.RoleQueryDTO;
 import com.common.core.entity.SysRole;
-import com.common.core.vo.RoleVO;
+import com.common.core.vo.role.RoleVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

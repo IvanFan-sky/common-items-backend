@@ -1,20 +1,22 @@
-package com.common.core.vo;
+package com.common.core.vo.role;
 
+import com.common.core.vo.permission.PermissionVO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
- * @Description 角色信息VO，用于返回角色基本信息
+ * @Description 角色详细信息VO，包含角色完整信息和关联权限
  * @Date 2025/1/7 18:16
  * @Author SparkFan
  */
 @Data
-@Schema(description = "角色信息VO")
-public class RoleVO implements Serializable {
+@Schema(description = "角色详细信息VO")
+public class RoleDetailVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -67,6 +69,24 @@ public class RoleVO implements Serializable {
     private String statusText;
 
     /**
+     * 权限列表
+     */
+    @Schema(description = "权限列表")
+    private List<PermissionVO> permissions;
+
+    /**
+     * 权限ID列表
+     */
+    @Schema(description = "权限ID列表", example = "[1, 2, 3]")
+    private List<Long> permissionIds;
+
+    /**
+     * 用户数量
+     */
+    @Schema(description = "用户数量", example = "5")
+    private Integer userCount;
+
+    /**
      * 备注
      */
     @Schema(description = "备注", example = "系统管理员角色")
@@ -87,8 +107,38 @@ public class RoleVO implements Serializable {
     private LocalDateTime updateTime;
 
     /**
+     * 创建者信息
+     */
+    @Schema(description = "创建者信息")
+    private SimpleUserVO createBy;
+
+    /**
+     * 更新者信息
+     */
+    @Schema(description = "更新者信息")
+    private SimpleUserVO updateBy;
+
+    /**
      * 版本号
      */
     @Schema(description = "版本号", example = "1")
     private Integer version;
+
+    /**
+     * 简单用户信息
+     */
+    @Data
+    @Schema(description = "简单用户信息")
+    public static class SimpleUserVO implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        @Schema(description = "用户ID", example = "1")
+        private Long id;
+
+        @Schema(description = "用户名", example = "admin")
+        private String username;
+
+        @Schema(description = "昵称", example = "管理员")
+        private String nickname;
+    }
 } 

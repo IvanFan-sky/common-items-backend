@@ -2,12 +2,12 @@ package com.common.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.stp.StpUtil;
-import com.common.core.dto.PermissionCreateDTO;
-import com.common.core.dto.PermissionQueryDTO;
-import com.common.core.dto.PermissionUpdateDTO;
+import com.common.core.dto.permission.PermissionCreateDTO;
+import com.common.core.dto.permission.PermissionQueryDTO;
+import com.common.core.dto.permission.PermissionUpdateDTO;
 import com.common.core.vo.PageResult;
-import com.common.core.vo.PermissionTreeVO;
-import com.common.core.vo.PermissionVO;
+import com.common.core.vo.permission.PermissionTreeVO;
+import com.common.core.vo.permission.PermissionVO;
 import com.common.core.vo.Result;
 import com.common.service.PermissionService;
 import io.swagger.v3.oas.annotations.Operation;

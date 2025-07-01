@@ -1,11 +1,11 @@
 package com.common.core.mapper;
 
-import com.common.core.dto.RoleCreateDTO;
-import com.common.core.dto.RoleQueryDTO;
-import com.common.core.dto.RoleUpdateDTO;
+import com.common.core.dto.role.RoleCreateDTO;
+import com.common.core.dto.role.RoleQueryDTO;
+import com.common.core.dto.role.RoleUpdateDTO;
 import com.common.core.entity.SysRole;
-import com.common.core.vo.RoleDetailVO;
-import com.common.core.vo.RoleVO;
+import com.common.core.vo.role.RoleDetailVO;
+import com.common.core.vo.role.RoleVO;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 

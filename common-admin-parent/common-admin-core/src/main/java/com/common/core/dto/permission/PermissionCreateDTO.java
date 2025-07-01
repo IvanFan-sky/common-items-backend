@@ -1,4 +1,4 @@
-package com.common.core.dto;
+package com.common.core.dto.permission;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -9,22 +9,15 @@ import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
- * @Description 权限更新DTO，用于接收更新权限的请求参数
+ * @Description 权限创建DTO，用于接收新增权限的请求参数
  * @Date 2025/1/7 18:16
  * @Author SparkFan
  */
 @Data
-@Schema(description = "权限更新DTO")
-public class PermissionUpdateDTO implements Serializable {
+@Schema(description = "权限创建DTO")
+public class PermissionCreateDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    /**
-     * 权限ID
-     */
-    @NotNull(message = "权限ID不能为空")
-    @Schema(description = "权限ID", example = "1", required = true)
-    private Long id;
 
     /**
      * 父权限ID
@@ -118,11 +111,4 @@ public class PermissionUpdateDTO implements Serializable {
     @Size(max = 500, message = "备注长度不能超过500字符")
     @Schema(description = "备注", example = "用户管理菜单")
     private String remark;
-
-    /**
-     * 版本号（用于乐观锁）
-     */
-    @NotNull(message = "版本号不能为空")
-    @Schema(description = "版本号", example = "1", required = true)
-    private Integer version;
 } 

@@ -1,11 +1,11 @@
 package com.common.core.mapper;
 
-import com.common.core.dto.UserCreateDTO;
-import com.common.core.dto.UserQueryDTO;
-import com.common.core.dto.UserUpdateDTO;
+import com.common.core.dto.user.UserCreateDTO;
+import com.common.core.dto.user.UserQueryDTO;
+import com.common.core.dto.user.UserUpdateDTO;
 import com.common.core.entity.SysUser;
-import com.common.core.vo.UserDetailVO;
-import com.common.core.vo.UserVO;
+import com.common.core.vo.user.UserDetailVO;
+import com.common.core.vo.user.UserVO;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 

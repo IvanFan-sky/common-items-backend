@@ -1,14 +1,14 @@
 package com.common.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.common.core.dto.RoleCreateDTO;
-import com.common.core.dto.RoleQueryDTO;
-import com.common.core.dto.RoleUpdateDTO;
-import com.common.core.dto.UserRoleAssignDTO;
+import com.common.core.dto.role.RoleCreateDTO;
+import com.common.core.dto.role.RoleQueryDTO;
+import com.common.core.dto.role.RoleUpdateDTO;
+import com.common.core.dto.user.UserRoleAssignDTO;
 import com.common.core.entity.SysRole;
 import com.common.core.vo.PageResult;
-import com.common.core.vo.RoleDetailVO;
-import com.common.core.vo.RoleVO;
+import com.common.core.vo.role.RoleDetailVO;
+import com.common.core.vo.role.RoleVO;
 
 import java.util.List;
 

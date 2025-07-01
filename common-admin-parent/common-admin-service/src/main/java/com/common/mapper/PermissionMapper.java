@@ -3,10 +3,10 @@ package com.common.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.common.core.dto.PermissionQueryDTO;
+import com.common.core.dto.permission.PermissionQueryDTO;
 import com.common.core.entity.SysPermission;
-import com.common.core.vo.PermissionTreeVO;
-import com.common.core.vo.PermissionVO;
+import com.common.core.vo.permission.PermissionTreeVO;
+import com.common.core.vo.permission.PermissionVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

@@ -1,20 +1,19 @@
 package com.common.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.common.core.dto.RoleCreateDTO;
-import com.common.core.dto.RoleQueryDTO;
-import com.common.core.dto.RoleUpdateDTO;
-import com.common.core.dto.UserRoleAssignDTO;
+import com.common.core.dto.role.RoleCreateDTO;
+import com.common.core.dto.role.RoleQueryDTO;
+import com.common.core.dto.role.RoleUpdateDTO;
+import com.common.core.dto.user.UserRoleAssignDTO;
 import com.common.core.entity.SysRole;
 import com.common.core.entity.SysRolePermission;
 import com.common.core.entity.SysUserRole;
 import com.common.core.mapper.RoleConvertMapper;
 import com.common.core.vo.PageResult;
-import com.common.core.vo.RoleDetailVO;
-import com.common.core.vo.RoleVO;
+import com.common.core.vo.role.RoleDetailVO;
+import com.common.core.vo.role.RoleVO;
 import com.common.mapper.RoleMapper;
 import com.common.mapper.RolePermissionMapper;
 import com.common.mapper.UserRoleMapper;
@@ -26,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

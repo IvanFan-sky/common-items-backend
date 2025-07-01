@@ -78,7 +78,25 @@ build/
 .merge_file*
 
 ### Application Logs ###
+# 日志文件和目录
+logs/
+*.log
+*.log.*
+*.out
+*.gz
+*.tar.gz
+
+# Spring Boot日志文件
 spring.log
+application.log
+error.log
+debug.log
+info.log
+
+# 自定义日志文件
+common-admin.log
+server.log
+business.log
 
 ### H2 Database files ###
 *.db

@@ -1,0 +1,238 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  JAVA_VERSION: '17'
+  MAVEN_VERSION: '3.9.6'
+  NODE_VERSION: '18'
+
+jobs:
+  # 代码质量检查
+  code-quality:
+    runs-on: ubuntu-latest
+    name: Code Quality Check
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史，用于SonarCloud分析
+
+      - name: Setup JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Run Checkstyle
+        run: mvn checkstyle:check -f common-admin-parent/pom.xml
+
+      - name: Run SpotBugs
+        run: mvn spotbugs:check -f common-admin-parent/pom.xml
+
+  # 构建和测试
+  build-and-test:
+    runs-on: ubuntu-latest
+    name: Build and Test
+    needs: code-quality
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: common_admin_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+      redis:
+        image: redis:7.0
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Wait for MySQL
+        run: |
+          until mysqladmin ping -h 127.0.0.1 -P 3306 -u root -proot --silent; do
+            echo 'Waiting for MySQL to be ready...'
+            sleep 5
+          done
+
+      - name: Wait for Redis
+        run: |
+          until redis-cli -h 127.0.0.1 -p 6379 ping; do
+            echo 'Waiting for Redis to be ready...'
+            sleep 5
+          done
+
+      - name: Run tests
+        run: mvn clean test -f common-admin-parent/pom.xml
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_NAME: common_admin_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+          REDIS_HOST: 127.0.0.1
+          REDIS_PORT: 6379
+
+      - name: Generate test report
+        run: mvn jacoco:report -f common-admin-parent/pom.xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./common-admin-parent/target/site/jacoco/jacoco.xml
+          flags: unittests
+          name: codecov-umbrella
+
+      - name: Build application
+        run: mvn clean package -DskipTests -f common-admin-parent/pom.xml
+
+      - name: Build Docker image
+        run: |
+          cd common-admin-parent
+          docker build -t common-admin:latest .
+
+      - name: Run integration tests
+        run: mvn verify -f common-admin-parent/pom.xml
+        env:
+          SPRING_PROFILES_ACTIVE: test
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: jar-artifacts
+          path: common-admin-parent/common-admin-web/target/*.jar
+          retention-days: 30
+
+  # 安全扫描
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scan
+    needs: build-and-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Run dependency check
+        run: mvn dependency-check:check -f common-admin-parent/pom.xml
+
+      - name: Upload dependency check results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-check-report
+          path: common-admin-parent/target/dependency-check-report.html
+
+  # 部署到开发环境
+  deploy-dev:
+    runs-on: ubuntu-latest
+    name: Deploy to Development
+    needs: [build-and-test, security-scan]
+    if: github.ref == 'refs/heads/develop'
+    environment: development
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: jar-artifacts
+          path: ./artifacts
+
+      - name: Deploy to development environment
+        run: |
+          echo "Deploying to development environment..."
+          # 这里可以添加具体的部署脚本
+          # 例如：scp、rsync、kubectl、docker-compose等
+          echo "Deployment completed successfully!"
+
+  # 部署到生产环境
+  deploy-prod:
+    runs-on: ubuntu-latest
+    name: Deploy to Production
+    needs: [build-and-test, security-scan]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: jar-artifacts
+          path: ./artifacts
+
+      - name: Deploy to production environment
+        run: |
+          echo "Deploying to production environment..."
+          # 这里可以添加具体的部署脚本
+          echo "Production deployment completed successfully!"
+
+  # 通知
+  notify:
+    runs-on: ubuntu-latest
+    name: Notification
+    needs: [deploy-dev, deploy-prod]
+    if: always()
+    steps:
+      - name: Notify deployment status
+        run: |
+          if [ "${{ needs.deploy-dev.result }}" == "success" ] || [ "${{ needs.deploy-prod.result }}" == "success" ]; then
+            echo "✅ Deployment successful!"
+          else
+            echo "❌ Deployment failed!"
+          fi 

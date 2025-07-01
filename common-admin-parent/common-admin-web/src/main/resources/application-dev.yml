@@ -1,0 +1,67 @@
+# 开发环境配置
+server:
+  port: 8080
+
+spring:
+  # 数据源配置
+  datasource:
+    druid:
+      # 开发环境数据库配置
+      url: jdbc:mysql://localhost:3306/common_admin_dev?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
+      username: root
+      password: 123456
+      # 开发环境开启SQL监控
+      filters: stat,wall,slf4j
+      stat-view-servlet:
+        enabled: true
+        login-username: admin
+        login-password: 123456
+
+  # Redis配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 
+      database: 0
+
+  # 开发工具配置
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: src/main/java
+      exclude: WEB-INF/**
+    livereload:
+      enabled: true
+      port: 35729
+
+# MyBatis Plus配置
+mybatis-plus:
+  configuration:
+    # 开发环境开启SQL日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 日志配置
+logging:
+  level:
+    com.common: debug
+    com.common.mapper: debug
+    root: info
+
+# Sa-Token配置
+sa-token:
+  # 开发环境token有效期设置短一些方便测试
+  timeout: 7200
+  # 开发环境输出详细日志
+  is-log: true
+
+# Knife4j配置
+knife4j:
+  enable: true
+  setting:
+    # 开发环境启用调试模式
+    enable-debug: true
+    # 启用SwaggerBootstrapUi增强
+    enable-swagger-bootstrap-ui: true
+    # 启用Knife4j增强
+    enable-knife4j: true

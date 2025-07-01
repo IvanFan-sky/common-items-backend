@@ -1,7 +1,0 @@
-com\common\config\RedisConfig.class
-com\common\config\WebConfig.class
-com\common\CommonAdminApplication.class
-com\common\config\CorsConfig.class
-com\common\config\MybatisPlusConfig.class
-com\common\config\GlobalExceptionHandler.class
-com\common\config\SaTokenConfig.class

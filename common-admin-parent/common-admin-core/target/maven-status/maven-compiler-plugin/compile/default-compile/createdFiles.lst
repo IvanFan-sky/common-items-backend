@@ -1,6 +1,0 @@
-com\common\core\entity\BaseEntity.class
-com\common\core\vo\Result.class
-com\common\core\constant\CommonConstants.class
-com\common\core\vo\PageResult.class
-com\common\core\exception\BusinessException.class
-com\common\core\dto\BaseQuery.class

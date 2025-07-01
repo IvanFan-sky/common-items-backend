@@ -2,7 +2,7 @@
 
 ## 📋 表结构总览
 
-### Stage 1: 核心基础功能表（9张）
+### Stage 1: 核心基础功能表（10张）
 
 | 表名 | 中文名称 | 功能描述 | 状态 |
 |-----|---------|---------|------|
@@ -15,6 +15,7 @@
 | sys_dict_data | 字典数据表 | 字典数据值管理 | ✅ |
 | sys_config | 系统配置表 | 系统参数配置 | ✅ |
 | sys_menu | 菜单表 | 系统菜单管理 | ✅ |
+| sys_user_social | 社交登录表 | 第三方社交平台登录信息 | ✅ |
 
 ---
 
@@ -260,7 +261,64 @@
 - KEY `idx_sys_menu_status` (`status`)
 - KEY `idx_sys_menu_order` (`order_num`)
 
+### 10. sys_user_social (社交登录表)
 
+**表说明**: 第三方社交平台登录信息管理，支持多平台绑定
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 注释 |
+|--------|----------|------|----------|---------|------|
+| id | BIGINT | - | NOT NULL | - | 主键ID |
+| user_id | BIGINT | - | NOT NULL | - | 用户ID |
+| social_type | VARCHAR | 20 | NOT NULL | - | 社交平台类型(wechat,qq,weibo,alipay,github等) |
+| social_id | VARCHAR | 100 | NOT NULL | - | 社交平台用户标识 |
+| social_nickname | VARCHAR | 100 | NULL | - | 社交平台昵称 |
+| social_avatar | VARCHAR | 200 | NULL | - | 社交平台头像 |
+| social_email | VARCHAR | 100 | NULL | - | 社交平台邮箱 |
+| social_phone | VARCHAR | 20 | NULL | - | 社交平台手机号 |
+| social_gender | TINYINT | - | NULL | 0 | 社交平台性别(0-未知,1-男,2-女) |
+| union_id | VARCHAR | 100 | NULL | - | 微信UnionID(用于多应用统一身份) |
+| open_id | VARCHAR | 100 | NULL | - | 微信OpenID |
+| access_token | VARCHAR | 500 | NULL | - | 访问令牌 |
+| refresh_token | VARCHAR | 500 | NULL | - | 刷新令牌 |
+| expires_in | BIGINT | - | NULL | - | 令牌过期时间戳 |
+| scope | VARCHAR | 200 | NULL | - | 授权范围 |
+| raw_user_info | TEXT | - | NULL | - | 原始用户信息JSON |
+| bind_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 绑定时间 |
+| last_login_time | DATETIME | - | NULL | - | 最后登录时间 |
+| login_count | INT | - | NOT NULL | 0 | 登录次数 |
+| status | TINYINT | - | NOT NULL | 1 | 状态(0-解绑,1-已绑定) |
+| remark | VARCHAR | 500 | NULL | - | 备注 |
+| create_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 创建时间 |
+| update_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 更新时间 |
+| create_by | BIGINT | - | NULL | - | 创建者ID |
+| update_by | BIGINT | - | NULL | - | 更新者ID |
+| deleted | TINYINT | - | NOT NULL | 0 | 逻辑删除(0-未删除,1-已删除) |
+| version | INT | - | NOT NULL | 1 | 版本号 |
+
+**索引设计**:
+- PRIMARY KEY (`id`)
+- UNIQUE KEY `uk_sys_user_social_platform` (`social_type`, `social_id`)
+- UNIQUE KEY `uk_sys_user_social_union` (`social_type`, `union_id`)
+- KEY `idx_sys_user_social_user_id` (`user_id`)
+- KEY `idx_sys_user_social_type` (`social_type`)
+- KEY `idx_sys_user_social_status` (`status`)
+- KEY `idx_sys_user_social_bind_time` (`bind_time`)
+
+**业务规则**:
+- 同一社交平台的社交ID全局唯一
+- 同一用户可绑定多个不同社交平台
+- 微信UnionID在同一开放平台下唯一
+- 令牌信息支持自动刷新机制
+- 支持社交账号的绑定与解绑操作
+
+**社交平台类型枚举**:
+- `wechat`: 微信登录
+- `qq`: QQ登录  
+- `weibo`: 微博登录
+- `alipay`: 支付宝登录
+- `github`: GitHub登录
+- `gitee`: Gitee登录
+- `dingtalk`: 钉钉登录
 
 ---
 
@@ -309,6 +367,7 @@
 - sys_role_permission.permission_id → sys_permission.id
 - sys_permission.parent_id → sys_permission.id
 - sys_menu.parent_id → sys_menu.id
+- sys_user_social.user_id → sys_user.id
 
 ### 唯一约束
 - 用户名、邮箱、手机号全局唯一

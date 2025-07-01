@@ -224,6 +224,46 @@ CREATE TABLE `sys_menu` (
     KEY `idx_sys_menu_order` (`order_num`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='菜单表';
 
+-- ==========================================
+-- 10. 社交登录表 (sys_user_social)
+-- ==========================================
+CREATE TABLE `sys_user_social` (
+    `id` BIGINT NOT NULL COMMENT '主键ID',
+    `user_id` BIGINT NOT NULL COMMENT '用户ID',
+    `social_type` VARCHAR(20) NOT NULL COMMENT '社交平台类型(wechat,qq,weibo,alipay,github等)',
+    `social_id` VARCHAR(100) NOT NULL COMMENT '社交平台用户标识',
+    `social_nickname` VARCHAR(100) NULL DEFAULT NULL COMMENT '社交平台昵称',
+    `social_avatar` VARCHAR(200) NULL DEFAULT NULL COMMENT '社交平台头像',
+    `social_email` VARCHAR(100) NULL DEFAULT NULL COMMENT '社交平台邮箱',
+    `social_phone` VARCHAR(20) NULL DEFAULT NULL COMMENT '社交平台手机号',
+    `social_gender` TINYINT NULL DEFAULT 0 COMMENT '社交平台性别(0-未知,1-男,2-女)',
+    `union_id` VARCHAR(100) NULL DEFAULT NULL COMMENT '微信UnionID(用于多应用统一身份)',
+    `open_id` VARCHAR(100) NULL DEFAULT NULL COMMENT '微信OpenID',
+    `access_token` VARCHAR(500) NULL DEFAULT NULL COMMENT '访问令牌',
+    `refresh_token` VARCHAR(500) NULL DEFAULT NULL COMMENT '刷新令牌',
+    `expires_in` BIGINT NULL DEFAULT NULL COMMENT '令牌过期时间戳',
+    `scope` VARCHAR(200) NULL DEFAULT NULL COMMENT '授权范围',
+    `raw_user_info` TEXT NULL DEFAULT NULL COMMENT '原始用户信息JSON',
+    `bind_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '绑定时间',
+    `last_login_time` DATETIME NULL DEFAULT NULL COMMENT '最后登录时间',
+    `login_count` INT NOT NULL DEFAULT 0 COMMENT '登录次数',
+    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态(0-解绑,1-已绑定)',
+    `remark` VARCHAR(500) NULL DEFAULT NULL COMMENT '备注',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `create_by` BIGINT NULL DEFAULT NULL COMMENT '创建者ID',
+    `update_by` BIGINT NULL DEFAULT NULL COMMENT '更新者ID',
+    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除(0-未删除,1-已删除)',
+    `version` INT NOT NULL DEFAULT 1 COMMENT '版本号',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_sys_user_social_platform` (`social_type`, `social_id`),
+    UNIQUE KEY `uk_sys_user_social_union` (`social_type`, `union_id`),
+    KEY `idx_sys_user_social_user_id` (`user_id`),
+    KEY `idx_sys_user_social_type` (`social_type`),
+    KEY `idx_sys_user_social_status` (`status`),
+    KEY `idx_sys_user_social_bind_time` (`bind_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='社交登录表';
+
 
 
 -- ==========================================
@@ -234,6 +274,7 @@ CREATE TABLE `sys_menu` (
 -- ALTER TABLE `sys_user_role` ADD CONSTRAINT `fk_sys_user_role_role` FOREIGN KEY (`role_id`) REFERENCES `sys_role` (`id`) ON DELETE CASCADE;
 -- ALTER TABLE `sys_role_permission` ADD CONSTRAINT `fk_sys_role_permission_role` FOREIGN KEY (`role_id`) REFERENCES `sys_role` (`id`) ON DELETE CASCADE;
 -- ALTER TABLE `sys_role_permission` ADD CONSTRAINT `fk_sys_role_permission_permission` FOREIGN KEY (`permission_id`) REFERENCES `sys_permission` (`id`) ON DELETE CASCADE;
+-- ALTER TABLE `sys_user_social` ADD CONSTRAINT `fk_sys_user_social_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`) ON DELETE CASCADE;
 
 -- ==========================================
 -- 脚本执行完成提示

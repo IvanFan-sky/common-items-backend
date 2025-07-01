@@ -147,7 +147,9 @@ INSERT INTO `sys_dict_type` (`id`, `dict_name`, `dict_type`, `status`, `remark`,
 (7, '通知类型', 'sys_notice_type', 1, '通知类型列表', 1, 1),
 (8, '通知状态', 'sys_notice_status', 1, '通知状态列表', 1, 1),
 (9, '操作类型', 'sys_oper_type', 1, '操作类型列表', 1, 1),
-(10, '数据范围', 'sys_data_scope', 1, '数据范围列表', 1, 1);
+(10, '数据范围', 'sys_data_scope', 1, '数据范围列表', 1, 1),
+(11, '社交平台类型', 'sys_social_type', 1, '第三方社交平台类型列表', 1, 1),
+(12, '社交绑定状态', 'sys_social_status', 1, '社交账号绑定状态列表', 1, 1);
 
 -- ==========================================
 -- 9. 字典数据基础数据
@@ -174,7 +176,20 @@ INSERT INTO `sys_dict_data` (`id`, `dict_sort`, `dict_label`, `dict_value`, `dic
 (10, 1, '全部数据权限', '1', 'sys_data_scope', '', '', 1, 1, '全部数据权限', 1, 1),
 (11, 2, '自定义数据权限', '2', 'sys_data_scope', '', '', 0, 1, '自定义数据权限', 1, 1),
 
-(14, 5, '仅本人数据权限', '5', 'sys_data_scope', '', '', 0, 1, '仅本人数据权限', 1, 1);
+(14, 5, '仅本人数据权限', '5', 'sys_data_scope', '', '', 0, 1, '仅本人数据权限', 1, 1),
+
+-- 社交平台类型
+(15, 1, '微信登录', 'wechat', 'sys_social_type', '', 'success', 1, 1, '微信第三方登录', 1, 1),
+(16, 2, 'QQ登录', 'qq', 'sys_social_type', '', 'primary', 0, 1, 'QQ第三方登录', 1, 1),
+(17, 3, '微博登录', 'weibo', 'sys_social_type', '', 'warning', 0, 1, '微博第三方登录', 1, 1),
+(18, 4, '支付宝登录', 'alipay', 'sys_social_type', '', 'info', 0, 1, '支付宝第三方登录', 1, 1),
+(19, 5, 'GitHub登录', 'github', 'sys_social_type', '', 'dark', 0, 1, 'GitHub第三方登录', 1, 1),
+(20, 6, 'Gitee登录', 'gitee', 'sys_social_type', '', 'danger', 0, 1, 'Gitee第三方登录', 1, 1),
+(21, 7, '钉钉登录', 'dingtalk', 'sys_social_type', '', 'cyan', 0, 1, '钉钉第三方登录', 1, 1),
+
+-- 社交绑定状态
+(22, 1, '已绑定', '1', 'sys_social_status', '', 'success', 1, 1, '社交账号已绑定', 1, 1),
+(23, 2, '已解绑', '0', 'sys_social_status', '', 'danger', 0, 1, '社交账号已解绑', 1, 1);
 
 -- ==========================================
 -- 10. 系统配置基础数据

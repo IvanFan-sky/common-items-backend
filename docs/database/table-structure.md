@@ -2,7 +2,7 @@
 
 ## 📋 表结构总览
 
-### Stage 1: 核心基础功能表（10张）
+### Stage 1: 核心基础功能表（9张）
 
 | 表名 | 中文名称 | 功能描述 | 状态 |
 |-----|---------|---------|------|
@@ -15,7 +15,6 @@
 | sys_dict_data | 字典数据表 | 字典数据值管理 | ✅ |
 | sys_config | 系统配置表 | 系统参数配置 | ✅ |
 | sys_menu | 菜单表 | 系统菜单管理 | ✅ |
-| sys_dept | 部门表 | 组织架构管理 | ✅ |
 
 ---
 
@@ -37,7 +36,7 @@
 | gender | TINYINT | - | NULL | 0 | 性别(0-未知,1-男,2-女) |
 | birthday | DATE | - | NULL | - | 生日 |
 | status | TINYINT | - | NOT NULL | 1 | 状态(0-禁用,1-启用) |
-| dept_id | BIGINT | - | NULL | - | 所属部门ID |
+
 | login_ip | VARCHAR | 50 | NULL | - | 最近登录IP |
 | login_time | DATETIME | - | NULL | - | 最近登录时间 |
 | remark | VARCHAR | 500 | NULL | - | 备注 |
@@ -53,7 +52,7 @@
 - UNIQUE KEY `uk_sys_user_username` (`username`)
 - UNIQUE KEY `uk_sys_user_email` (`email`)
 - UNIQUE KEY `uk_sys_user_phone` (`phone`)
-- KEY `idx_sys_user_dept_id` (`dept_id`)
+
 - KEY `idx_sys_user_status` (`status`)
 - KEY `idx_sys_user_create_time` (`create_time`)
 
@@ -67,7 +66,7 @@
 | role_name | VARCHAR | 50 | NOT NULL | - | 角色名称 |
 | role_code | VARCHAR | 50 | NOT NULL | - | 角色编码 |
 | role_sort | INT | - | NOT NULL | 0 | 显示顺序 |
-| data_scope | TINYINT | - | NOT NULL | 1 | 数据范围(1-全部,2-自定义,3-本部门,4-本部门及以下,5-仅本人) |
+| data_scope | TINYINT | - | NOT NULL | 1 | 数据范围(1-全部,2-自定义,5-仅本人) |
 | status | TINYINT | - | NOT NULL | 1 | 状态(0-禁用,1-启用) |
 | remark | VARCHAR | 500 | NULL | - | 备注 |
 | create_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 创建时间 |
@@ -261,35 +260,7 @@
 - KEY `idx_sys_menu_status` (`status`)
 - KEY `idx_sys_menu_order` (`order_num`)
 
-### 10. sys_dept (部门表)
 
-**表说明**: 组织架构管理，支持部门层级结构
-
-| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 注释 |
-|--------|----------|------|----------|---------|------|
-| id | BIGINT | - | NOT NULL | - | 主键ID |
-| parent_id | BIGINT | - | NOT NULL | 0 | 父部门ID |
-| ancestors | VARCHAR | 500 | NULL | - | 祖级列表 |
-| dept_name | VARCHAR | 50 | NOT NULL | - | 部门名称 |
-| dept_code | VARCHAR | 50 | NULL | - | 部门编码 |
-| order_num | INT | - | NOT NULL | 0 | 显示顺序 |
-| leader | VARCHAR | 50 | NULL | - | 负责人 |
-| phone | VARCHAR | 20 | NULL | - | 联系电话 |
-| email | VARCHAR | 100 | NULL | - | 邮箱 |
-| status | TINYINT | - | NOT NULL | 1 | 状态(0-禁用,1-启用) |
-| remark | VARCHAR | 500 | NULL | - | 备注 |
-| create_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 创建时间 |
-| update_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 更新时间 |
-| create_by | BIGINT | - | NULL | - | 创建者ID |
-| update_by | BIGINT | - | NULL | - | 更新者ID |
-| deleted | TINYINT | - | NOT NULL | 0 | 逻辑删除(0-未删除,1-已删除) |
-| version | INT | - | NOT NULL | 1 | 版本号 |
-
-**索引设计**:
-- PRIMARY KEY (`id`)
-- KEY `idx_sys_dept_parent_id` (`parent_id`)
-- KEY `idx_sys_dept_status` (`status`)
-- KEY `idx_sys_dept_order` (`order_num`)
 
 ---
 
@@ -332,14 +303,12 @@
 ## 🔧 数据库约束说明
 
 ### 外键约束
-- sys_user.dept_id → sys_dept.id
 - sys_user_role.user_id → sys_user.id
 - sys_user_role.role_id → sys_role.id
 - sys_role_permission.role_id → sys_role.id
 - sys_role_permission.permission_id → sys_permission.id
 - sys_permission.parent_id → sys_permission.id
 - sys_menu.parent_id → sys_menu.id
-- sys_dept.parent_id → sys_dept.id
 
 ### 唯一约束
 - 用户名、邮箱、手机号全局唯一

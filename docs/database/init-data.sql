@@ -7,25 +7,16 @@
 
 USE `common_items_db`;
 
--- ==========================================
--- 1. 部门表基础数据
--- ==========================================
-INSERT INTO `sys_dept` (`id`, `parent_id`, `ancestors`, `dept_name`, `dept_code`, `order_num`, `leader`, `phone`, `email`, `status`, `remark`, `create_by`, `update_by`) VALUES
-(1, 0, '0', '星火科技', 'SPARKTECH', 0, 'SparkFan', '13800138000', 'admin@sparktech.com', 1, '顶级部门', 1, 1),
-(2, 1, '0,1', '技术部', 'TECH', 1, 'TechLead', '13800138001', 'tech@sparktech.com', 1, '技术研发部门', 1, 1),
-(3, 1, '0,1', '产品部', 'PRODUCT', 2, 'ProductLead', '13800138002', 'product@sparktech.com', 1, '产品策划部门', 1, 1),
-(4, 1, '0,1', '运营部', 'OPERATION', 3, 'OperationLead', '13800138003', 'operation@sparktech.com', 1, '运营推广部门', 1, 1),
-(5, 2, '0,1,2', '后端开发组', 'BACKEND', 1, 'BackendLead', '13800138011', 'backend@sparktech.com', 1, '后端开发小组', 1, 1),
-(6, 2, '0,1,2', '前端开发组', 'FRONTEND', 2, 'FrontendLead', '13800138012', 'frontend@sparktech.com', 1, '前端开发小组', 1, 1),
-(7, 2, '0,1,2', '测试组', 'QA', 3, 'QALead', '13800138013', 'qa@sparktech.com', 1, '质量保证小组', 1, 1);
+
+
 
 -- ==========================================
 -- 2. 用户表基础数据
 -- ==========================================
-INSERT INTO `sys_user` (`id`, `username`, `password`, `nickname`, `email`, `phone`, `avatar`, `gender`, `status`, `dept_id`, `remark`, `create_by`, `update_by`) VALUES
-(1, 'admin', '$2a$10$7JB720yubVSOnIggJAVqGOsKdnP8Ss6gGsOe/p2EjO3mFjnhFUJB2', '超级管理员', 'admin@sparktech.com', '13800138000', NULL, 1, 1, 1, '系统默认超级管理员', 1, 1),
-(2, 'sparkfan', '$2a$10$7JB720yubVSOnIggJAVqGOsKdnP8Ss6gGsOe/p2EjO3mFjnhFUJB2', 'SparkFan', 'sparkfan@sparktech.com', '13800138001', NULL, 1, 1, 2, '系统开发者', 1, 1),
-(3, 'testuser', '$2a$10$7JB720yubVSOnIggJAVqGOsKdnP8Ss6gGsOe/p2EjO3mFjnhFUJB2', '测试用户', 'test@sparktech.com', '13800138999', NULL, 0, 1, 7, '系统测试用户', 1, 1);
+INSERT INTO `sys_user` (`id`, `username`, `password`, `nickname`, `email`, `phone`, `avatar`, `gender`, `status`, `remark`, `create_by`, `update_by`) VALUES
+(1, 'admin', '$2a$10$7JB720yubVSOnIggJAVqGOsKdnP8Ss6gGsOe/p2EjO3mFjnhFUJB2', '超级管理员', 'admin@sparktech.com', '13800138000', NULL, 1, 1, '系统默认超级管理员', 1, 1),
+(2, 'sparkfan', '$2a$10$7JB720yubVSOnIggJAVqGOsKdnP8Ss6gGsOe/p2EjO3mFjnhFUJB2', 'SparkFan', 'sparkfan@sparktech.com', '13800138001', NULL, 1, 1, '系统开发者', 1, 1),
+(3, 'testuser', '$2a$10$7JB720yubVSOnIggJAVqGOsKdnP8Ss6gGsOe/p2EjO3mFjnhFUJB2', '测试用户', 'test@sparktech.com', '13800138999', NULL, 0, 1, '系统测试用户', 1, 1);
 
 -- ==========================================
 -- 3. 角色表基础数据
@@ -33,7 +24,7 @@ INSERT INTO `sys_user` (`id`, `username`, `password`, `nickname`, `email`, `phon
 INSERT INTO `sys_role` (`id`, `role_name`, `role_code`, `role_sort`, `data_scope`, `status`, `remark`, `create_by`, `update_by`) VALUES
 (1, '超级管理员', 'SUPER_ADMIN', 0, 1, 1, '超级管理员，拥有系统所有权限', 1, 1),
 (2, '系统管理员', 'ADMIN', 1, 2, 1, '系统管理员，拥有大部分管理权限', 1, 1),
-(3, '部门管理员', 'DEPT_ADMIN', 2, 3, 1, '部门管理员，可管理本部门用户', 1, 1),
+
 (4, '普通用户', 'USER', 3, 5, 1, '普通用户，基础查看权限', 1, 1),
 (5, '开发人员', 'DEVELOPER', 4, 4, 1, '开发人员角色，技术相关权限', 1, 1),
 (6, '测试人员', 'TESTER', 5, 4, 1, '测试人员角色，测试相关权限', 1, 1);
@@ -52,7 +43,7 @@ INSERT INTO `sys_menu` (`id`, `parent_id`, `menu_name`, `menu_type`, `path`, `co
 (101, 1, '用户管理', 2, '/system/user', 'system/user/index', 'system:user:list', 'user', 1, 1, 1, '用户管理菜单', 1, 1),
 (102, 1, '角色管理', 2, '/system/role', 'system/role/index', 'system:role:list', 'peoples', 2, 1, 1, '角色管理菜单', 1, 1),
 (103, 1, '菜单管理', 2, '/system/menu', 'system/menu/index', 'system:menu:list', 'tree-table', 3, 1, 1, '菜单管理菜单', 1, 1),
-(104, 1, '部门管理', 2, '/system/dept', 'system/dept/index', 'system:dept:list', 'tree', 4, 1, 1, '部门管理菜单', 1, 1),
+
 (105, 1, '字典管理', 2, '/system/dict', 'system/dict/index', 'system:dict:list', 'dict', 5, 1, 1, '字典管理菜单', 1, 1),
 (106, 1, '参数设置', 2, '/system/config', 'system/config/index', 'system:config:list', 'edit', 6, 1, 1, '参数设置菜单', 1, 1),
 
@@ -78,11 +69,7 @@ INSERT INTO `sys_menu` (`id`, `parent_id`, `menu_name`, `menu_type`, `path`, `co
 (1015, 103, '菜单修改', 3, '', '', 'system:menu:edit', '#', 3, 1, 1, '', 1, 1),
 (1016, 103, '菜单删除', 3, '', '', 'system:menu:remove', '#', 4, 1, 1, '', 1, 1),
 
--- 部门管理按钮
-(1017, 104, '部门查询', 3, '', '', 'system:dept:query', '#', 1, 1, 1, '', 1, 1),
-(1018, 104, '部门新增', 3, '', '', 'system:dept:add', '#', 2, 1, 1, '', 1, 1),
-(1019, 104, '部门修改', 3, '', '', 'system:dept:edit', '#', 3, 1, 1, '', 1, 1),
-(1020, 104, '部门删除', 3, '', '', 'system:dept:remove', '#', 4, 1, 1, '', 1, 1),
+
 
 -- 字典管理按钮
 (1021, 105, '字典查询', 3, '', '', 'system:dict:query', '#', 1, 1, 1, '', 1, 1),
@@ -107,7 +94,7 @@ INSERT INTO `sys_permission` (`id`, `parent_id`, `permission_name`, `permission_
 (2, 1, '用户管理', 'system:user', 1, '/system/user', 'system/user/index', 'user', 1, 1, 1, '用户管理权限', 1, 1),
 (3, 1, '角色管理', 'system:role', 1, '/system/role', 'system/role/index', 'peoples', 2, 1, 1, '角色管理权限', 1, 1),
 (4, 1, '权限管理', 'system:permission', 1, '/system/permission', 'system/permission/index', 'lock', 3, 1, 1, '权限管理权限', 1, 1),
-(5, 1, '部门管理', 'system:dept', 1, '/system/dept', 'system/dept/index', 'tree', 4, 1, 1, '部门管理权限', 1, 1),
+
 
 -- 用户管理操作权限
 (21, 2, '用户查询', 'system:user:query', 2, '', '', '', 1, 1, 0, '用户查询权限', 1, 1),
@@ -121,11 +108,7 @@ INSERT INTO `sys_permission` (`id`, `parent_id`, `permission_name`, `permission_
 (33, 3, '角色修改', 'system:role:edit', 2, '', '', '', 3, 1, 0, '角色修改权限', 1, 1),
 (34, 3, '角色删除', 'system:role:remove', 2, '', '', '', 4, 1, 0, '角色删除权限', 1, 1),
 
--- 部门管理操作权限
-(41, 5, '部门查询', 'system:dept:query', 2, '', '', '', 1, 1, 0, '部门查询权限', 1, 1),
-(42, 5, '部门新增', 'system:dept:add', 2, '', '', '', 2, 1, 0, '部门新增权限', 1, 1),
-(43, 5, '部门修改', 'system:dept:edit', 2, '', '', '', 3, 1, 0, '部门修改权限', 1, 1),
-(44, 5, '部门删除', 'system:dept:remove', 2, '', '', '', 4, 1, 0, '部门删除权限', 1, 1);
+
 
 -- ==========================================
 -- 6. 用户角色关联数据
@@ -140,14 +123,13 @@ INSERT INTO `sys_user_role` (`id`, `user_id`, `role_id`, `create_by`) VALUES
 -- ==========================================
 INSERT INTO `sys_role_permission` (`id`, `role_id`, `permission_id`, `create_by`) VALUES
 -- 超级管理员拥有所有权限
-(1, 1, 1, 1), (2, 1, 2, 1), (3, 1, 3, 1), (4, 1, 4, 1), (5, 1, 5, 1),
+(1, 1, 1, 1), (2, 1, 2, 1), (3, 1, 3, 1), (4, 1, 4, 1),
 (6, 1, 21, 1), (7, 1, 22, 1), (8, 1, 23, 1), (9, 1, 24, 1),
 (10, 1, 31, 1), (11, 1, 32, 1), (12, 1, 33, 1), (13, 1, 34, 1),
-(14, 1, 41, 1), (15, 1, 42, 1), (16, 1, 43, 1), (17, 1, 44, 1),
 
 -- 开发人员拥有查询权限
-(21, 5, 1, 1), (22, 5, 2, 1), (23, 5, 3, 1), (24, 5, 5, 1),
-(25, 5, 21, 1), (26, 5, 31, 1), (27, 5, 41, 1),
+(21, 5, 1, 1), (22, 5, 2, 1), (23, 5, 3, 1),
+(25, 5, 21, 1), (26, 5, 31, 1),
 
 -- 普通用户只有基础查询权限
 (31, 4, 1, 1), (32, 4, 2, 1), (33, 4, 21, 1);
@@ -191,8 +173,7 @@ INSERT INTO `sys_dict_data` (`id`, `dict_sort`, `dict_label`, `dict_value`, `dic
 -- 数据范围
 (10, 1, '全部数据权限', '1', 'sys_data_scope', '', '', 1, 1, '全部数据权限', 1, 1),
 (11, 2, '自定义数据权限', '2', 'sys_data_scope', '', '', 0, 1, '自定义数据权限', 1, 1),
-(12, 3, '本部门数据权限', '3', 'sys_data_scope', '', '', 0, 1, '本部门数据权限', 1, 1),
-(13, 4, '本部门及以下数据权限', '4', 'sys_data_scope', '', '', 0, 1, '本部门及以下数据权限', 1, 1),
+
 (14, 5, '仅本人数据权限', '5', 'sys_data_scope', '', '', 0, 1, '仅本人数据权限', 1, 1);
 
 -- ==========================================

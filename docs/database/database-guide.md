@@ -136,8 +136,8 @@ WHERE TABLE_SCHEMA = 'common_items_db';
 
 ### 2. 常用优化SQL
 ```sql
--- 优化用户查询（按部门）
-EXPLAIN SELECT * FROM sys_user WHERE dept_id = 1 AND status = 1;
+-- 优化用户查询（按状态）
+EXPLAIN SELECT * FROM sys_user WHERE status = 1;
 
 -- 优化权限查询
 EXPLAIN SELECT p.* 

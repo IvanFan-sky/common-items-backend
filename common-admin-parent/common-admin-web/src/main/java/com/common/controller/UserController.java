@@ -3,14 +3,14 @@ package com.common.controller;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.util.StrUtil;
 import com.common.core.dto.*;
 import com.common.core.entity.SysUser;
-import com.common.core.vo.PageResult;
-import com.common.core.vo.Result;
-import com.common.core.vo.UserDetailVO;
-import com.common.core.vo.UserVO;
-import com.common.service.UserService;
 import com.common.core.mapper.UserConvertMapper;
+import com.common.core.util.CaptchaUtils;
+import com.common.core.util.LoginSecurityUtil;
+import com.common.core.vo.*;
+import com.common.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,7 +20,11 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Description 用户管理控制器，提供用户注册、登录、信息管理等功能
@@ -36,6 +40,8 @@ public class UserController {
 
     private final UserService userService;
     private final UserConvertMapper convertMapper;
+    private final CaptchaUtils captchaUtils;
+    private final LoginSecurityUtil loginSecurityUtil;
 
     /**
      * 用户注册
@@ -50,26 +56,96 @@ public class UserController {
     }
 
     /**
+     * 获取验证码
+     */
+    @SaIgnore
+    @GetMapping("/captcha")
+    @Operation(summary = "获取验证码", description = "生成登录验证码")
+    public Result<Map<String, String>> getCaptcha() {
+        Map<String, String> captcha = captchaUtils.generateCaptcha();
+        return Result.success(captcha);
+    }
+
+    /**
      * 用户登录
      */
     @SaIgnore
     @PostMapping("/login")
-    @Operation(summary = "用户登录", description = "用户登录验证接口，支持用户名/邮箱/手机号登录")
-    public Result<String> login(@Valid @RequestBody UserLoginDTO loginDTO, HttpServletRequest request) {
-        log.info("用户登录请求，用户名：{}", loginDTO.getUsername());
+    @Operation(summary = "用户登录", description = "用户登录验证接口，支持用户名/邮箱/手机号登录，包含验证码验证和安全检查")
+    public Result<LoginVO> login(@Valid @RequestBody UserLoginDTO loginDTO, HttpServletRequest request) {
+        String username = loginDTO.getUsername();
+        log.info("用户登录请求，用户名：{}", username);
         
-        // 获取客户端IP
-        String loginIp = getClientIp(request);
-        
-        // 验证登录
-        SysUser user = userService.login(loginDTO.getUsername(), loginDTO.getPassword(), loginIp);
-        
-        // 生成token
-        StpUtil.login(user.getId());
-        String token = StpUtil.getTokenValue();
-        
-        log.info("用户登录成功，用户ID：{}，用户名：{}", user.getId(), user.getUsername());
-        return Result.success(token, "登录成功");
+        try {
+            // 1. 检查账户是否被锁定
+            if (!loginSecurityUtil.canLogin(username)) {
+                String errorMessage = loginSecurityUtil.getLoginFailureMessage(username);
+                return Result.error(errorMessage);
+            }
+            
+            // 2. 验证验证码（如果提供了验证码）
+            if (StrUtil.isNotBlank(loginDTO.getCaptcha()) && StrUtil.isNotBlank(loginDTO.getCaptchaKey())) {
+                if (!captchaUtils.verifyCaptcha(loginDTO.getCaptchaKey(), loginDTO.getCaptcha())) {
+                    loginSecurityUtil.recordLoginFailure(username);
+                    return Result.error("验证码错误");
+                }
+            }
+            
+            // 3. 获取客户端IP
+            String loginIp = getClientIp(request);
+            
+            // 4. 验证登录
+            SysUser user = userService.login(username, loginDTO.getPassword(), loginIp);
+            
+            // 5. 登录成功，清除失败记录
+            loginSecurityUtil.clearLoginFailure(username);
+            
+            // 6. 生成token
+            StpUtil.login(user.getId());
+            String accessToken = StpUtil.getTokenValue();
+            
+            // 7. 构建登录响应
+            LoginVO loginVO = buildLoginResponse(user, accessToken, loginIp);
+            
+            log.info("用户登录成功，用户ID：{}，用户名：{}，IP：{}", user.getId(), user.getUsername(), loginIp);
+            return Result.success(loginVO);
+            
+        } catch (Exception e) {
+            // 记录登录失败
+            loginSecurityUtil.recordLoginFailure(username);
+            String errorMessage = loginSecurityUtil.getLoginFailureMessage(username);
+            log.warn("用户登录失败，用户名：{}，错误：{}", username, e.getMessage());
+            return Result.error(errorMessage);
+        }
+    }
+
+    /**
+     * 构建登录响应对象
+     */
+    private LoginVO buildLoginResponse(SysUser user, String accessToken, String loginIp) {
+        return LoginVO.builder()
+                .accessToken(accessToken)
+                .tokenType("Bearer")
+                .expiresIn(StpUtil.getTokenTimeout())
+                .userId(user.getId())
+                .username(user.getUsername())
+                .nickname(user.getNickname())
+                .avatar(user.getAvatar())
+                .email(user.hasEmail() ? user.getEmail() : null)
+                .phone(user.hasPhone() ? user.getPhone() : null)
+                .status(user.getStatus())
+                .displayName(user.getNickname() != null ? user.getNickname() : user.getUsername())
+                .loginTime(LocalDateTime.now())
+                .loginIp(loginIp)
+                .lastLoginTime(user.getLoginTime())
+                .sessionId(StpUtil.getTokenValue())
+                .message("登录成功")
+                // TODO: 从角色权限表查询
+                .roles(List.of())
+                .permissions(List.of())
+                .superAdmin(false)
+                .firstLogin(user.getLoginTime() == null)
+                .build();
     }
 
     /**
@@ -285,5 +361,137 @@ public class UserController {
         }
         
         return ip;
+    }
+
+    /**
+     * 刷新Token
+     */
+    @PostMapping("/refresh")
+    @Operation(summary = "刷新Token", description = "刷新访问令牌")
+    public Result<LoginVO> refreshToken() {
+        try {
+            // 检查当前token是否有效
+            if (!StpUtil.isLogin()) {
+                return Result.unauthorized("未登录或token已过期");
+            }
+            
+            Long userId = StpUtil.getLoginIdAsLong();
+            SysUser user = userService.getById(userId);
+            if (user == null) {
+                return Result.error("用户不存在");
+            }
+            
+            // 续签token
+            StpUtil.renewTimeout(7200); // 2小时
+            String newToken = StpUtil.getTokenValue();
+            
+            // 构建响应
+            LoginVO loginVO = buildLoginResponse(user, newToken, "");
+            
+            log.info("Token刷新成功，用户ID：{}", userId);
+            return Result.success(loginVO);
+            
+        } catch (Exception e) {
+            log.error("Token刷新失败", e);
+            return Result.error("Token刷新失败");
+        }
+    }
+
+    /**
+     * 获取在线用户列表
+     */
+    @GetMapping("/online/list")
+    @Operation(summary = "获取在线用户列表", description = "查询当前在线的用户列表")
+    @SaCheckPermission("user:online:list")
+    public Result<List<Map<String, Object>>> getOnlineUsers() {
+        try {
+            // 获取所有在线token
+            List<String> tokenList = StpUtil.searchTokenValue("", 0, -1, false);
+            List<Map<String, Object>> onlineUsers = new ArrayList<>();
+            
+            for (String token : tokenList) {
+                try {
+                    Object loginId = StpUtil.getLoginIdByToken(token);
+                    if (loginId != null) {
+                        Long userId = Long.valueOf(loginId.toString());
+                        SysUser user = userService.getById(userId);
+                        if (user != null) {
+                            Map<String, Object> userInfo = new HashMap<>();
+                            userInfo.put("userId", user.getId());
+                            userInfo.put("username", user.getUsername());
+                            userInfo.put("nickname", user.getNickname());
+                            userInfo.put("loginTime", System.currentTimeMillis());
+                            userInfo.put("lastActivityTime", System.currentTimeMillis());
+                            userInfo.put("tokenValue", token);
+                            onlineUsers.add(userInfo);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.warn("获取在线用户信息失败，token：{}", token, e);
+                }
+            }
+            
+            return Result.success(onlineUsers);
+            
+        } catch (Exception e) {
+            log.error("获取在线用户列表失败", e);
+            return Result.error("获取在线用户列表失败");
+        }
+    }
+
+    /**
+     * 强制用户下线
+     */
+    @PostMapping("/online/logout/{userId}")
+    @Operation(summary = "强制用户下线", description = "管理员强制指定用户下线")
+    @SaCheckPermission("user:online:logout")
+    public Result<Void> forceLogout(@Parameter(description = "用户ID") @PathVariable Long userId) {
+        try {
+            StpUtil.logout(userId);
+            log.info("强制用户下线成功，用户ID：{}", userId);
+            return Result.success("用户已强制下线");
+        } catch (Exception e) {
+            log.error("强制用户下线失败，用户ID：{}", userId, e);
+            return Result.error("强制下线失败");
+        }
+    }
+
+    /**
+     * 解锁账户
+     */
+    @PostMapping("/unlock/{identifier}")
+    @Operation(summary = "解锁账户", description = "管理员解锁被锁定的账户")
+    @SaCheckPermission("user:unlock")
+    public Result<Void> unlockAccount(@Parameter(description = "登录标识") @PathVariable String identifier) {
+        try {
+            loginSecurityUtil.unlockAccount(identifier);
+            log.info("账户解锁成功，标识：{}", identifier);
+            return Result.success("账户解锁成功");
+        } catch (Exception e) {
+            log.error("账户解锁失败，标识：{}", identifier, e);
+            return Result.error("账户解锁失败");
+        }
+    }
+
+    /**
+     * 获取账户锁定状态
+     */
+    @GetMapping("/lock/status/{identifier}")
+    @Operation(summary = "获取账户锁定状态", description = "查询账户是否被锁定及剩余时间")
+    @SaCheckPermission("user:lock:status")
+    public Result<Map<String, Object>> getLockStatus(@Parameter(description = "登录标识") @PathVariable String identifier) {
+        try {
+            Map<String, Object> status = new HashMap<>();
+            status.put("locked", loginSecurityUtil.isAccountLocked(identifier));
+            status.put("failureCount", loginSecurityUtil.getLoginFailureCount(identifier));
+            status.put("maxAttempts", loginSecurityUtil.getMaxLoginAttempts());
+            status.put("remainingTime", loginSecurityUtil.getAccountLockRemainingTime(identifier));
+            status.put("message", loginSecurityUtil.getLoginFailureMessage(identifier));
+            
+            return Result.success(status);
+        } catch (Exception e) {
+            log.error("获取账户锁定状态失败，标识：{}", identifier, e);
+            return Result.error("获取锁定状态失败");
+        }
     }
 } 

@@ -25,7 +25,6 @@ CREATE TABLE `sys_user` (
     `gender` TINYINT NULL DEFAULT 0 COMMENT '性别(0-未知,1-男,2-女)',
     `birthday` DATE NULL DEFAULT NULL COMMENT '生日',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态(0-禁用,1-启用)',
-
     `login_ip` VARCHAR(50) NULL DEFAULT NULL COMMENT '最近登录IP',
     `login_time` DATETIME NULL DEFAULT NULL COMMENT '最近登录时间',
     `remark` VARCHAR(500) NULL DEFAULT NULL COMMENT '备注',
@@ -68,20 +67,22 @@ CREATE TABLE `sys_role` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色表';
 
 -- ==========================================
--- 3. 权限表 (sys_permission)
+-- 3. 权限菜单表 (sys_permission)
 -- ==========================================
 CREATE TABLE `sys_permission` (
     `id` BIGINT NOT NULL COMMENT '主键ID',
     `parent_id` BIGINT NOT NULL DEFAULT 0 COMMENT '父权限ID',
     `permission_name` VARCHAR(50) NOT NULL COMMENT '权限名称',
     `permission_code` VARCHAR(100) NOT NULL COMMENT '权限编码',
-    `permission_type` TINYINT NOT NULL DEFAULT 1 COMMENT '权限类型(1-菜单,2-按钮,3-接口)',
+    `permission_type` TINYINT NOT NULL DEFAULT 1 COMMENT '权限类型(1-目录,2-菜单,3-按钮,4-接口)',
     `path` VARCHAR(200) NULL DEFAULT NULL COMMENT '路由路径',
     `component` VARCHAR(200) NULL DEFAULT NULL COMMENT '组件路径',
     `icon` VARCHAR(100) NULL DEFAULT NULL COMMENT '图标',
     `order_num` INT NOT NULL DEFAULT 0 COMMENT '显示顺序',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态(0-禁用,1-启用)',
     `visible` TINYINT NOT NULL DEFAULT 1 COMMENT '是否显示(0-隐藏,1-显示)',
+    `is_frame` TINYINT NOT NULL DEFAULT 0 COMMENT '是否外链(0-否,1-是)',
+    `is_cache` TINYINT NOT NULL DEFAULT 0 COMMENT '是否缓存(0-否,1-是)',
     `remark` VARCHAR(500) NULL DEFAULT NULL COMMENT '备注',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -94,7 +95,7 @@ CREATE TABLE `sys_permission` (
     KEY `idx_sys_permission_parent_id` (`parent_id`),
     KEY `idx_sys_permission_type` (`permission_type`),
     KEY `idx_sys_permission_status` (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='权限表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='权限菜单表';
 
 -- ==========================================
 -- 4. 用户角色关联表 (sys_user_role)
@@ -194,38 +195,7 @@ CREATE TABLE `sys_config` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统配置表';
 
 -- ==========================================
--- 9. 菜单表 (sys_menu)
--- ==========================================
-CREATE TABLE `sys_menu` (
-    `id` BIGINT NOT NULL COMMENT '主键ID',
-    `parent_id` BIGINT NOT NULL DEFAULT 0 COMMENT '父菜单ID',
-    `menu_name` VARCHAR(50) NOT NULL COMMENT '菜单名称',
-    `menu_type` TINYINT NOT NULL DEFAULT 1 COMMENT '菜单类型(1-目录,2-菜单,3-按钮)',
-    `path` VARCHAR(200) NULL DEFAULT NULL COMMENT '路由路径',
-    `component` VARCHAR(200) NULL DEFAULT NULL COMMENT '组件路径',
-    `permission` VARCHAR(100) NULL DEFAULT NULL COMMENT '权限标识',
-    `icon` VARCHAR(100) NULL DEFAULT NULL COMMENT '菜单图标',
-    `order_num` INT NOT NULL DEFAULT 0 COMMENT '显示顺序',
-    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态(0-禁用,1-启用)',
-    `visible` TINYINT NOT NULL DEFAULT 1 COMMENT '是否显示(0-隐藏,1-显示)',
-    `is_frame` TINYINT NOT NULL DEFAULT 0 COMMENT '是否外链(0-否,1-是)',
-    `is_cache` TINYINT NOT NULL DEFAULT 0 COMMENT '是否缓存(0-否,1-是)',
-    `remark` VARCHAR(500) NULL DEFAULT NULL COMMENT '备注',
-    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `create_by` BIGINT NULL DEFAULT NULL COMMENT '创建者ID',
-    `update_by` BIGINT NULL DEFAULT NULL COMMENT '更新者ID',
-    `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除(0-未删除,1-已删除)',
-    `version` INT NOT NULL DEFAULT 1 COMMENT '版本号',
-    PRIMARY KEY (`id`),
-    KEY `idx_sys_menu_parent_id` (`parent_id`),
-    KEY `idx_sys_menu_type` (`menu_type`),
-    KEY `idx_sys_menu_status` (`status`),
-    KEY `idx_sys_menu_order` (`order_num`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='菜单表';
-
--- ==========================================
--- 10. 社交登录表 (sys_user_social)
+-- 9. 社交登录表 (sys_user_social)
 -- ==========================================
 CREATE TABLE `sys_user_social` (
     `id` BIGINT NOT NULL COMMENT '主键ID',

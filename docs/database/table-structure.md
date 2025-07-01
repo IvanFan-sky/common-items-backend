@@ -2,19 +2,18 @@
 
 ## 📋 表结构总览
 
-### Stage 1: 核心基础功能表（10张）
+### Stage 1: 核心基础功能表（9张）
 
 | 表名 | 中文名称 | 功能描述 | 状态 |
 |-----|---------|---------|------|
 | sys_user | 用户表 | 用户基本信息管理 | ✅ |
 | sys_role | 角色表 | 系统角色定义 | ✅ |
-| sys_permission | 权限表 | 系统权限定义 | ✅ |
+| sys_permission | 权限菜单表 | 系统权限和菜单统一管理 | ✅ |
 | sys_user_role | 用户角色关联表 | 用户与角色的多对多关系 | ✅ |
 | sys_role_permission | 角色权限关联表 | 角色与权限的多对多关系 | ✅ |
 | sys_dict_type | 字典类型表 | 字典数据类型管理 | ✅ |
 | sys_dict_data | 字典数据表 | 字典数据值管理 | ✅ |
 | sys_config | 系统配置表 | 系统参数配置 | ✅ |
-| sys_menu | 菜单表 | 系统菜单管理 | ✅ |
 | sys_user_social | 社交登录表 | 第三方社交平台登录信息 | ✅ |
 
 ---
@@ -83,9 +82,9 @@
 - KEY `idx_sys_role_status` (`status`)
 - KEY `idx_sys_role_sort` (`role_sort`)
 
-### 3. sys_permission (权限表)
+### 3. sys_permission (权限菜单表)
 
-**表说明**: 系统权限定义，支持菜单权限和按钮权限
+**表说明**: 系统权限和菜单统一管理，支持目录、菜单、按钮和接口权限
 
 | 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 注释 |
 |--------|----------|------|----------|---------|------|
@@ -93,13 +92,15 @@
 | parent_id | BIGINT | - | NOT NULL | 0 | 父权限ID |
 | permission_name | VARCHAR | 50 | NOT NULL | - | 权限名称 |
 | permission_code | VARCHAR | 100 | NOT NULL | - | 权限编码 |
-| permission_type | TINYINT | - | NOT NULL | 1 | 权限类型(1-菜单,2-按钮,3-接口) |
+| permission_type | TINYINT | - | NOT NULL | 1 | 权限类型(1-目录,2-菜单,3-按钮,4-接口) |
 | path | VARCHAR | 200 | NULL | - | 路由路径 |
 | component | VARCHAR | 200 | NULL | - | 组件路径 |
 | icon | VARCHAR | 100 | NULL | - | 图标 |
 | order_num | INT | - | NOT NULL | 0 | 显示顺序 |
 | status | TINYINT | - | NOT NULL | 1 | 状态(0-禁用,1-启用) |
 | visible | TINYINT | - | NOT NULL | 1 | 是否显示(0-隐藏,1-显示) |
+| is_frame | TINYINT | - | NOT NULL | 0 | 是否外链(0-否,1-是) |
+| is_cache | TINYINT | - | NOT NULL | 0 | 是否缓存(0-否,1-是) |
 | remark | VARCHAR | 500 | NULL | - | 备注 |
 | create_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 创建时间 |
 | update_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 更新时间 |
@@ -227,41 +228,9 @@
 - UNIQUE KEY `uk_sys_config_key` (`config_key`)
 - KEY `idx_sys_config_type` (`config_type`)
 
-### 9. sys_menu (菜单表)
 
-**表说明**: 系统菜单管理，支持树形结构
 
-| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 注释 |
-|--------|----------|------|----------|---------|------|
-| id | BIGINT | - | NOT NULL | - | 主键ID |
-| parent_id | BIGINT | - | NOT NULL | 0 | 父菜单ID |
-| menu_name | VARCHAR | 50 | NOT NULL | - | 菜单名称 |
-| menu_type | TINYINT | - | NOT NULL | 1 | 菜单类型(1-目录,2-菜单,3-按钮) |
-| path | VARCHAR | 200 | NULL | - | 路由路径 |
-| component | VARCHAR | 200 | NULL | - | 组件路径 |
-| permission | VARCHAR | 100 | NULL | - | 权限标识 |
-| icon | VARCHAR | 100 | NULL | - | 菜单图标 |
-| order_num | INT | - | NOT NULL | 0 | 显示顺序 |
-| status | TINYINT | - | NOT NULL | 1 | 状态(0-禁用,1-启用) |
-| visible | TINYINT | - | NOT NULL | 1 | 是否显示(0-隐藏,1-显示) |
-| is_frame | TINYINT | - | NOT NULL | 0 | 是否外链(0-否,1-是) |
-| is_cache | TINYINT | - | NOT NULL | 0 | 是否缓存(0-否,1-是) |
-| remark | VARCHAR | 500 | NULL | - | 备注 |
-| create_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 创建时间 |
-| update_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 更新时间 |
-| create_by | BIGINT | - | NULL | - | 创建者ID |
-| update_by | BIGINT | - | NULL | - | 更新者ID |
-| deleted | TINYINT | - | NOT NULL | 0 | 逻辑删除(0-未删除,1-已删除) |
-| version | INT | - | NOT NULL | 1 | 版本号 |
-
-**索引设计**:
-- PRIMARY KEY (`id`)
-- KEY `idx_sys_menu_parent_id` (`parent_id`)
-- KEY `idx_sys_menu_type` (`menu_type`)
-- KEY `idx_sys_menu_status` (`status`)
-- KEY `idx_sys_menu_order` (`order_num`)
-
-### 10. sys_user_social (社交登录表)
+### 9. sys_user_social (社交登录表)
 
 **表说明**: 第三方社交平台登录信息管理，支持多平台绑定
 
@@ -651,7 +620,6 @@
 - sys_role_permission.role_id → sys_role.id
 - sys_role_permission.permission_id → sys_permission.id
 - sys_permission.parent_id → sys_permission.id
-- sys_menu.parent_id → sys_menu.id
 - sys_user_social.user_id → sys_user.id
 
 #### Stage 2 外键约束

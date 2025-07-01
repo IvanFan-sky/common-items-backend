@@ -22,27 +22,25 @@ You are an expert in Java programming, Spring Boot, Spring Framework, Maven, MyB
 - JVM版本：OpenJDK 17+ 或 Oracle JDK 17+
 
 ## 模板变量配置
-为了实现类注释中的动态信息，需要配置以下模板变量：
+为了实现统一的类注释格式（@Description、@Date、@Author），需要配置以下模板变量：
 
 ### IDE模板变量设置
 在IDE中配置以下变量（以IntelliJ IDEA为例）：
 - `${author}` : 代码作者名称
-- `${date}` : 创建日期（格式：yyyy-MM-dd）
+- `${date}` : 创建日期（格式：yyyy/M/d H:mm）
 
 ### Cursor IDE配置
 在Cursor中，这些变量会自动获取：
 - `${author}` : 从Git配置或系统用户信息获取
-- `${date}` : 自动获取当前日期
+- `${date}` : 自动获取当前日期时间
 
 ### 使用方式
 创建新类时，Cursor会自动替换模板中的变量：
 ```java
 /**
- * 用户实体类
- * 对应数据库表：sys_user
- * 
- * @author zhangsan
- * @since 2024-01-15
+ * @Description 用户实体类，对应数据库表sys_user
+ * @Date 2025/7/1 12:06
+ * @Author SparkFan
  */
 ```
 
@@ -96,10 +94,9 @@ You are an expert in Java programming, Spring Boot, Spring Framework, Maven, MyB
 ### 1. 实体类注解
 ```java
 /**
- * [实体功能描述]
- * 
- * @author ${author}
- * @since ${date}
+ * @Description 实体功能描述
+ * @Date ${date}
+ * @Author ${author}
  */
 @Data
 @TableName("表名")
@@ -119,8 +116,9 @@ public class Entity extends BaseEntity {
 ### 2. Controller注解
 ```java
 /**
- * [模块名称]控制器
- * 提供[模块名称]相关的REST API接口
+ * @Description [模块名称]控制器，提供[模块名称]相关的REST API接口
+ * @Date ${date}
+ * @Author ${author}
  */
 @RestController
 @RequestMapping("/api/模块名")
@@ -140,8 +138,9 @@ public class Controller {
 ### 3. Service注解
 ```java
 /**
- * [模块名称]业务逻辑服务实现类
- * 处理[模块名称]相关的业务逻辑
+ * @Description [模块名称]业务逻辑服务实现类，处理[模块名称]相关的业务逻辑
+ * @Date ${date}
+ * @Author ${author}
  */
 @Service
 @Slf4j
@@ -153,8 +152,9 @@ public class ServiceImpl extends ServiceImpl<Mapper, Entity> implements Service 
 ### 4. Mapper注解
 ```java
 /**
- * [实体名称]数据访问层接口
- * 负责[实体名称]的数据库操作
+ * @Description [实体名称]数据访问层接口，负责[实体名称]的数据库操作
+ * @Date ${date}
+ * @Author ${author}
  */
 @Mapper
 public interface Mapper extends BaseMapper<Entity> {
@@ -273,25 +273,32 @@ public interface Mapper extends BaseMapper<Entity> {
 
 ### 2. 类注释规范
 
-**实体类注释模板（特殊规范）：**
-实体类必须包含功能说明、作者和创建时间信息：
+**统一类注释模板：**
+所有新建类都必须使用以下统一的注释模板：
 
 ```java
 /**
- * [实体功能描述]
- * 
- * @author ${author}
- * @since ${date}
+ * @Description TODO(在创建时说明该类功能)
+ * @Date ${date}
+ * @Author ${author}
  */
 ```
 
-**其他类注释规范：**
-除实体类外的所有类都遵循标准JavaDoc注释规范，包含类的功能描述：
+**模板说明：**
+- `@Description`: 类的功能描述，创建时请将"TODO(在创建时说明该类功能)"替换为具体的功能说明
+- `@Date`: 类的创建日期，自动获取当前日期（格式：yyyy/M/d H:mm）
+- `@Author`: 类的创建作者，自动获取当前开发者信息
 
+**实际使用示例：**
 ```java
 /**
- * [类的功能描述]
+ * @Description 用户信息实体类，对应数据库表sys_user
+ * @Date 2025/7/1 12:06
+ * @Author SparkFan
  */
+public class UserEntity extends BaseEntity {
+    // 类实现
+}
 ```
 
 ### 3. 方法注释规范
@@ -308,12 +315,13 @@ public interface Mapper extends BaseMapper<Entity> {
 ```
 
 ### 4. 代码注释规范
-- 实体类必须包含功能说明、@author和@since信息
-- 其他类和方法遵循标准JavaDoc注释规范
+- 所有新建类必须使用统一的@Description、@Date、@Author注释格式
+- 方法遵循标准JavaDoc注释规范，包含功能描述、参数说明、返回值说明
 - 复杂业务逻辑添加行内注释
 - 注释要简洁明了，及时更新
 - 使用中文注释，便于团队理解
 - 注释应该说明"为什么"而不仅仅是"做什么"
+- 创建类时请及时将@Description中的TODO替换为具体功能说明
 
 ### 3. 代码风格
 - 使用4个空格缩进

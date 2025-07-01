@@ -1,0 +1,88 @@
+# 测试环境配置
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  # 数据源配置
+  datasource:
+    druid:
+      url: jdbc:mysql://test-mysql:3306/common_admin_test?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8
+      username: test_user
+      password: test_password
+      # 测试环境开启SQL监控
+      stat-view-servlet:
+        enabled: true
+        login-username: test
+        login-password: test123
+        allow: 192.168.0.0/16
+      
+  # Redis配置
+  data:
+    redis:
+      host: test-redis
+      port: 6379
+      password: test_redis_password
+      database: 1
+
+  # 邮件配置(测试环境)
+  mail:
+    host: smtp.qq.com
+    username: test@example.com
+    password: test-password
+    port: 587
+
+# 日志配置
+logging:
+  level:
+    com.common: debug
+    org.springframework.security: info
+    com.baomidou.mybatisplus: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+  file:
+    name: logs/test/common-admin.log
+  logback:
+    rollingpolicy:
+      max-file-size: 50MB
+      max-history: 7
+
+# Sa-Token配置(测试环境)
+sa-token:
+  # 测试环境中等超时时间
+  timeout: 86400
+  # 开启日志便于调试
+  is-log: true
+
+# Knife4j配置(测试环境)
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+    enable-version: true
+
+# 系统配置(测试环境)
+common:
+  # 测试环境文件上传路径
+  upload-path: /tmp/test/upload/
+  avatar-path: /tmp/test/avatar/
+  # 测试环境关闭验证码
+  captcha-enabled: false
+  # 测试环境配置
+  dev-mode: false
+  # 测试环境允许的跨域源
+  cors-origins: 
+    - http://test-frontend:3000
+    - http://localhost:3000
+
+# 监控配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always 

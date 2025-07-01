@@ -149,7 +149,11 @@ INSERT INTO `sys_dict_type` (`id`, `dict_name`, `dict_type`, `status`, `remark`,
 (9, '操作类型', 'sys_oper_type', 1, '操作类型列表', 1, 1),
 (10, '数据范围', 'sys_data_scope', 1, '数据范围列表', 1, 1),
 (11, '社交平台类型', 'sys_social_type', 1, '第三方社交平台类型列表', 1, 1),
-(12, '社交绑定状态', 'sys_social_status', 1, '社交账号绑定状态列表', 1, 1);
+(12, '社交绑定状态', 'sys_social_status', 1, '社交账号绑定状态列表', 1, 1),
+(13, '文件类型', 'sys_file_type', 1, '文件类型分类列表', 1, 1),
+(14, '存储类型', 'sys_storage_type', 1, '文件存储类型列表', 1, 1),
+(15, '日志类型', 'sys_log_type', 1, '操作日志类型列表', 1, 1),
+(16, '错误级别', 'sys_error_level', 1, '系统错误级别列表', 1, 1);
 
 -- ==========================================
 -- 9. 字典数据基础数据
@@ -189,7 +193,37 @@ INSERT INTO `sys_dict_data` (`id`, `dict_sort`, `dict_label`, `dict_value`, `dic
 
 -- 社交绑定状态
 (22, 1, '已绑定', '1', 'sys_social_status', '', 'success', 1, 1, '社交账号已绑定', 1, 1),
-(23, 2, '已解绑', '0', 'sys_social_status', '', 'danger', 0, 1, '社交账号已解绑', 1, 1);
+(23, 2, '已解绑', '0', 'sys_social_status', '', 'danger', 0, 1, '社交账号已解绑', 1, 1),
+
+-- 文件类型
+(24, 1, '图片文件', 'image', 'sys_file_type', '', 'success', 1, 1, '图片文件类型', 1, 1),
+(25, 2, '文档文件', 'document', 'sys_file_type', '', 'primary', 0, 1, '文档文件类型', 1, 1),
+(26, 3, '视频文件', 'video', 'sys_file_type', '', 'warning', 0, 1, '视频文件类型', 1, 1),
+(27, 4, '音频文件', 'audio', 'sys_file_type', '', 'info', 0, 1, '音频文件类型', 1, 1),
+(28, 5, '其他文件', 'other', 'sys_file_type', '', 'default', 0, 1, '其他文件类型', 1, 1),
+
+-- 存储类型
+(29, 1, '本地存储', 'local', 'sys_storage_type', '', 'success', 1, 1, '本地文件存储', 1, 1),
+(30, 2, '阿里云OSS', 'oss', 'sys_storage_type', '', 'primary', 0, 1, '阿里云对象存储', 1, 1),
+(31, 3, '腾讯云COS', 'cos', 'sys_storage_type', '', 'info', 0, 1, '腾讯云对象存储', 1, 1),
+(32, 4, '七牛云存储', 'qiniu', 'sys_storage_type', '', 'warning', 0, 1, '七牛云对象存储', 1, 1),
+(33, 5, 'MinIO存储', 'minio', 'sys_storage_type', '', 'secondary', 0, 1, 'MinIO对象存储', 1, 1),
+
+-- 日志类型
+(34, 1, '登录登出', 'LOGIN', 'sys_log_type', '', 'success', 1, 1, '用户登录登出操作', 1, 1),
+(35, 2, '新增操作', 'CREATE', 'sys_log_type', '', 'primary', 0, 1, '新增数据操作', 1, 1),
+(36, 3, '修改操作', 'UPDATE', 'sys_log_type', '', 'warning', 0, 1, '修改数据操作', 1, 1),
+(37, 4, '删除操作', 'DELETE', 'sys_log_type', '', 'danger', 0, 1, '删除数据操作', 1, 1),
+(38, 5, '查询操作', 'QUERY', 'sys_log_type', '', 'info', 0, 1, '查询数据操作', 1, 1),
+(39, 6, '导出操作', 'EXPORT', 'sys_log_type', '', 'secondary', 0, 1, '导出数据操作', 1, 1),
+(40, 7, '导入操作', 'IMPORT', 'sys_log_type', '', 'dark', 0, 1, '导入数据操作', 1, 1),
+
+-- 错误级别
+(41, 1, '调试级别', 'DEBUG', 'sys_error_level', '', 'secondary', 1, 1, '调试信息', 1, 1),
+(42, 2, '信息级别', 'INFO', 'sys_error_level', '', 'info', 0, 1, '一般信息', 1, 1),
+(43, 3, '警告级别', 'WARN', 'sys_error_level', '', 'warning', 0, 1, '警告信息', 1, 1),
+(44, 4, '错误级别', 'ERROR', 'sys_error_level', '', 'danger', 0, 1, '错误信息', 1, 1),
+(45, 5, '严重错误', 'FATAL', 'sys_error_level', '', 'dark', 0, 1, '严重错误信息', 1, 1);
 
 -- ==========================================
 -- 10. 系统配置基础数据

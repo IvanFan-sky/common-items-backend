@@ -322,45 +322,330 @@
 
 ---
 
-## 📋 Stage 2 表结构设计（预览）
+## 📋 Stage 2 表结构详细设计
 
-### 文件管理模块
+### Stage 2: 基本业务功能表（7张）
 
-#### file_info (文件信息表)
-- 文件基本信息：文件名、大小、类型、路径等
-- 文件元数据：MD5、创建时间、访问权限等
+| 表名 | 中文名称 | 功能描述 | 状态 |
+|-----|---------|---------|------|
+| file_info | 文件信息表 | 文件基本信息和元数据管理 | ✅ |
+| file_storage | 文件存储表 | 文件存储策略和配置管理 | ✅ |
+| file_relation | 文件关联表 | 文件与业务实体关联关系 | ✅ |
+| file_version | 文件版本表 | 文件版本控制和历史记录 | ✅ |
+| log_operation | 操作日志表 | 用户操作行为记录 | ✅ |
+| log_login | 登录日志表 | 用户登录登出记录 | ✅ |
+| log_error | 错误日志表 | 系统异常和错误记录 | ✅ |
 
-#### file_storage (文件存储表)
-- 存储策略：本地存储、OSS存储、CDN存储
-- 存储配置：存储路径、访问URL、存储参数等
+---
 
-#### file_relation (文件关联表)
-- 文件与业务实体的关联关系
-- 支持一对多、多对多关联
+## 📊 Stage 2 表结构详细设计
 
-#### file_version (文件版本表)
-- 文件版本控制
-- 版本历史记录
+### 文件管理模块 (file_*)
 
-### 日志管理模块
+### 1. file_info (文件信息表)
 
-#### log_operation (操作日志表)
-- 用户操作记录
-- 操作类型、操作对象、操作结果等
+**表说明**: 文件基本信息和元数据管理，支持多种文件类型
 
-#### log_login (登录日志表)
-- 用户登录登出记录
-- 登录IP、登录时间、登录状态等
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 注释 |
+|--------|----------|------|----------|---------|------|
+| id | BIGINT | - | NOT NULL | - | 主键ID |
+| file_name | VARCHAR | 255 | NOT NULL | - | 原始文件名 |
+| file_path | VARCHAR | 500 | NOT NULL | - | 文件存储路径 |
+| file_url | VARCHAR | 500 | NULL | - | 文件访问URL |
+| file_size | BIGINT | - | NOT NULL | 0 | 文件大小(字节) |
+| file_type | VARCHAR | 50 | NOT NULL | - | 文件类型(image,document,video,audio,other) |
+| file_extension | VARCHAR | 20 | NOT NULL | - | 文件扩展名 |
+| mime_type | VARCHAR | 100 | NOT NULL | - | MIME类型 |
+| file_md5 | VARCHAR | 32 | NOT NULL | - | 文件MD5值 |
+| file_sha1 | VARCHAR | 40 | NULL | - | 文件SHA1值 |
+| storage_type | VARCHAR | 20 | NOT NULL | 'local' | 存储类型(local,oss,cos,qiniu,minio) |
+| storage_id | BIGINT | - | NULL | - | 存储配置ID |
+| bucket_name | VARCHAR | 100 | NULL | - | 存储桶名称 |
+| object_key | VARCHAR | 500 | NULL | - | 对象存储Key |
+| upload_ip | VARCHAR | 50 | NULL | - | 上传IP地址 |
+| upload_user_agent | VARCHAR | 500 | NULL | - | 上传用户代理 |
+| thumbnail_path | VARCHAR | 500 | NULL | - | 缩略图路径 |
+| width | INT | - | NULL | - | 图片宽度(像素) |
+| height | INT | - | NULL | - | 图片高度(像素) |
+| duration | INT | - | NULL | - | 音视频时长(秒) |
+| download_count | INT | - | NOT NULL | 0 | 下载次数 |
+| view_count | INT | - | NOT NULL | 0 | 查看次数 |
+| is_public | TINYINT | - | NOT NULL | 0 | 是否公开(0-私有,1-公开) |
+| access_level | TINYINT | - | NOT NULL | 1 | 访问级别(1-所有人,2-登录用户,3-指定用户) |
+| expire_time | DATETIME | - | NULL | - | 过期时间 |
+| status | TINYINT | - | NOT NULL | 1 | 状态(0-禁用,1-正常,2-处理中,3-失败) |
+| remark | VARCHAR | 500 | NULL | - | 备注 |
+| create_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 创建时间 |
+| update_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 更新时间 |
+| create_by | BIGINT | - | NULL | - | 创建者ID |
+| update_by | BIGINT | - | NULL | - | 更新者ID |
+| deleted | TINYINT | - | NOT NULL | 0 | 逻辑删除(0-未删除,1-已删除) |
+| version | INT | - | NOT NULL | 1 | 版本号 |
 
-#### log_error (错误日志表)
-- 系统异常日志
-- 错误类型、错误信息、堆栈信息等
+**索引设计**:
+- PRIMARY KEY (`id`)
+- UNIQUE KEY `uk_file_info_md5` (`file_md5`)
+- KEY `idx_file_info_type` (`file_type`)
+- KEY `idx_file_info_storage` (`storage_type`)
+- KEY `idx_file_info_create_by` (`create_by`)
+- KEY `idx_file_info_create_time` (`create_time`)
+- KEY `idx_file_info_status` (`status`)
+- KEY `idx_file_info_expire` (`expire_time`)
+
+### 2. file_storage (文件存储表)
+
+**表说明**: 文件存储策略和配置管理，支持多种存储方式
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 注释 |
+|--------|----------|------|----------|---------|------|
+| id | BIGINT | - | NOT NULL | - | 主键ID |
+| storage_name | VARCHAR | 100 | NOT NULL | - | 存储名称 |
+| storage_code | VARCHAR | 50 | NOT NULL | - | 存储编码 |
+| storage_type | VARCHAR | 20 | NOT NULL | - | 存储类型(local,oss,cos,qiniu,minio) |
+| access_key | VARCHAR | 200 | NULL | - | 访问密钥 |
+| secret_key | VARCHAR | 200 | NULL | - | 私有密钥 |
+| endpoint | VARCHAR | 200 | NULL | - | 服务端点 |
+| region | VARCHAR | 50 | NULL | - | 存储区域 |
+| bucket_name | VARCHAR | 100 | NULL | - | 存储桶名称 |
+| domain | VARCHAR | 200 | NULL | - | 自定义域名 |
+| base_path | VARCHAR | 200 | NULL | '/' | 基础路径 |
+| path_style | TINYINT | - | NOT NULL | 0 | 路径样式(0-虚拟主机,1-路径) |
+| is_https | TINYINT | - | NOT NULL | 1 | 是否HTTPS(0-HTTP,1-HTTPS) |
+| is_default | TINYINT | - | NOT NULL | 0 | 是否默认(0-否,1-是) |
+| max_file_size | BIGINT | - | NOT NULL | 52428800 | 最大文件大小(字节,默认50MB) |
+| allowed_types | VARCHAR | 500 | NULL | - | 允许的文件类型(逗号分隔) |
+| sort_order | INT | - | NOT NULL | 0 | 排序序号 |
+| config_json | TEXT | - | NULL | - | 扩展配置JSON |
+| status | TINYINT | - | NOT NULL | 1 | 状态(0-禁用,1-启用) |
+| remark | VARCHAR | 500 | NULL | - | 备注 |
+| create_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 创建时间 |
+| update_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 更新时间 |
+| create_by | BIGINT | - | NULL | - | 创建者ID |
+| update_by | BIGINT | - | NULL | - | 更新者ID |
+| deleted | TINYINT | - | NOT NULL | 0 | 逻辑删除(0-未删除,1-已删除) |
+| version | INT | - | NOT NULL | 1 | 版本号 |
+
+**索引设计**:
+- PRIMARY KEY (`id`)
+- UNIQUE KEY `uk_file_storage_code` (`storage_code`)
+- KEY `idx_file_storage_type` (`storage_type`)
+- KEY `idx_file_storage_default` (`is_default`)
+- KEY `idx_file_storage_status` (`status`)
+- KEY `idx_file_storage_sort` (`sort_order`)
+
+### 3. file_relation (文件关联表)
+
+**表说明**: 文件与业务实体关联关系，支持多对多关联
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 注释 |
+|--------|----------|------|----------|---------|------|
+| id | BIGINT | - | NOT NULL | - | 主键ID |
+| file_id | BIGINT | - | NOT NULL | - | 文件ID |
+| relation_type | VARCHAR | 50 | NOT NULL | - | 关联类型(user_avatar,post_image,document等) |
+| relation_id | BIGINT | - | NOT NULL | - | 关联实体ID |
+| relation_field | VARCHAR | 50 | NULL | - | 关联字段名 |
+| sort_order | INT | - | NOT NULL | 0 | 排序序号 |
+| is_main | TINYINT | - | NOT NULL | 0 | 是否主要文件(0-否,1-是) |
+| usage_type | VARCHAR | 30 | NOT NULL | 'normal' | 使用类型(normal,thumbnail,preview) |
+| status | TINYINT | - | NOT NULL | 1 | 状态(0-禁用,1-启用) |
+| remark | VARCHAR | 500 | NULL | - | 备注 |
+| create_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 创建时间 |
+| update_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 更新时间 |
+| create_by | BIGINT | - | NULL | - | 创建者ID |
+| update_by | BIGINT | - | NULL | - | 更新者ID |
+| deleted | TINYINT | - | NOT NULL | 0 | 逻辑删除(0-未删除,1-已删除) |
+| version | INT | - | NOT NULL | 1 | 版本号 |
+
+**索引设计**:
+- PRIMARY KEY (`id`)
+- UNIQUE KEY `uk_file_relation` (`file_id`, `relation_type`, `relation_id`, `usage_type`)
+- KEY `idx_file_relation_file` (`file_id`)
+- KEY `idx_file_relation_entity` (`relation_type`, `relation_id`)
+- KEY `idx_file_relation_main` (`is_main`)
+- KEY `idx_file_relation_sort` (`sort_order`)
+
+### 4. file_version (文件版本表)
+
+**表说明**: 文件版本控制和历史记录，支持文件版本管理
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 注释 |
+|--------|----------|------|----------|---------|------|
+| id | BIGINT | - | NOT NULL | - | 主键ID |
+| file_id | BIGINT | - | NOT NULL | - | 文件ID |
+| version_num | VARCHAR | 20 | NOT NULL | - | 版本号(如v1.0, v1.1) |
+| version_name | VARCHAR | 100 | NULL | - | 版本名称 |
+| file_name | VARCHAR | 255 | NOT NULL | - | 文件名 |
+| file_path | VARCHAR | 500 | NOT NULL | - | 文件路径 |
+| file_size | BIGINT | - | NOT NULL | 0 | 文件大小 |
+| file_md5 | VARCHAR | 32 | NOT NULL | - | 文件MD5值 |
+| change_type | VARCHAR | 20 | NOT NULL | 'update' | 变更类型(create,update,replace,delete) |
+| change_log | TEXT | - | NULL | - | 变更日志 |
+| is_current | TINYINT | - | NOT NULL | 0 | 是否当前版本(0-否,1-是) |
+| download_count | INT | - | NOT NULL | 0 | 下载次数 |
+| status | TINYINT | - | NOT NULL | 1 | 状态(0-禁用,1-启用,2-已删除) |
+| remark | VARCHAR | 500 | NULL | - | 备注 |
+| create_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 创建时间 |
+| update_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 更新时间 |
+| create_by | BIGINT | - | NULL | - | 创建者ID |
+| update_by | BIGINT | - | NULL | - | 更新者ID |
+| deleted | TINYINT | - | NOT NULL | 0 | 逻辑删除(0-未删除,1-已删除) |
+| version | INT | - | NOT NULL | 1 | 版本号 |
+
+**索引设计**:
+- PRIMARY KEY (`id`)
+- UNIQUE KEY `uk_file_version` (`file_id`, `version_num`)
+- KEY `idx_file_version_file` (`file_id`)
+- KEY `idx_file_version_current` (`is_current`)
+- KEY `idx_file_version_create_time` (`create_time`)
+- KEY `idx_file_version_status` (`status`)
+
+### 日志管理模块 (log_*)
+
+### 5. log_operation (操作日志表)
+
+**表说明**: 用户操作行为记录，支持操作审计和追踪
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 注释 |
+|--------|----------|------|----------|---------|------|
+| id | BIGINT | - | NOT NULL | - | 主键ID |
+| trace_id | VARCHAR | 32 | NULL | - | 请求追踪ID |
+| user_id | BIGINT | - | NULL | - | 操作用户ID |
+| username | VARCHAR | 50 | NULL | - | 用户名 |
+| operation_name | VARCHAR | 100 | NOT NULL | - | 操作名称 |
+| operation_type | VARCHAR | 20 | NOT NULL | - | 操作类型(CREATE,UPDATE,DELETE,QUERY,LOGIN,LOGOUT,EXPORT,IMPORT) |
+| business_type | VARCHAR | 50 | NULL | - | 业务类型(USER,ROLE,PERMISSION,FILE等) |
+| method | VARCHAR | 10 | NOT NULL | - | 请求方法(GET,POST,PUT,DELETE) |
+| request_url | VARCHAR | 500 | NOT NULL | - | 请求URL |
+| request_ip | VARCHAR | 50 | NOT NULL | - | 请求IP |
+| request_location | VARCHAR | 100 | NULL | - | 请求地址 |
+| request_params | TEXT | - | NULL | - | 请求参数 |
+| request_body | TEXT | - | NULL | - | 请求体 |
+| response_result | TEXT | - | NULL | - | 响应结果 |
+| response_status | INT | - | NULL | - | 响应状态码 |
+| error_msg | TEXT | - | NULL | - | 错误信息 |
+| execute_time | BIGINT | - | NULL | - | 执行时间(毫秒) |
+| user_agent | VARCHAR | 500 | NULL | - | 用户代理 |
+| browser_type | VARCHAR | 50 | NULL | - | 浏览器类型 |
+| os_type | VARCHAR | 50 | NULL | - | 操作系统 |
+| device_type | VARCHAR | 20 | NULL | - | 设备类型(PC,MOBILE,TABLET) |
+| module_name | VARCHAR | 50 | NULL | - | 模块名称 |
+| class_name | VARCHAR | 200 | NULL | - | 类名 |
+| method_name | VARCHAR | 100 | NULL | - | 方法名 |
+| operation_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 操作时间 |
+| status | TINYINT | - | NOT NULL | 1 | 状态(0-失败,1-成功,2-异常) |
+| create_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 创建时间 |
+
+**索引设计**:
+- PRIMARY KEY (`id`)
+- KEY `idx_log_operation_user` (`user_id`)
+- KEY `idx_log_operation_type` (`operation_type`)
+- KEY `idx_log_operation_time` (`operation_time`)
+- KEY `idx_log_operation_ip` (`request_ip`)
+- KEY `idx_log_operation_status` (`status`)
+- KEY `idx_log_operation_trace` (`trace_id`)
+
+### 6. log_login (登录日志表)
+
+**表说明**: 用户登录登出记录，支持安全审计和异常检测
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 注释 |
+|--------|----------|------|----------|---------|------|
+| id | BIGINT | - | NOT NULL | - | 主键ID |
+| session_id | VARCHAR | 100 | NULL | - | 会话ID |
+| user_id | BIGINT | - | NULL | - | 用户ID |
+| username | VARCHAR | 50 | NOT NULL | - | 用户名 |
+| login_type | VARCHAR | 20 | NOT NULL | 'password' | 登录类型(password,wechat,qq,sms,email) |
+| login_method | VARCHAR | 20 | NOT NULL | 'web' | 登录方式(web,app,api) |
+| login_ip | VARCHAR | 50 | NOT NULL | - | 登录IP |
+| login_location | VARCHAR | 100 | NULL | - | 登录地点 |
+| user_agent | VARCHAR | 500 | NULL | - | 用户代理 |
+| browser_type | VARCHAR | 50 | NULL | - | 浏览器类型 |
+| os_type | VARCHAR | 50 | NULL | - | 操作系统 |
+| device_type | VARCHAR | 20 | NULL | - | 设备类型(PC,MOBILE,TABLET) |
+| device_id | VARCHAR | 100 | NULL | - | 设备标识 |
+| login_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 登录时间 |
+| logout_time | DATETIME | - | NULL | - | 登出时间 |
+| online_duration | BIGINT | - | NULL | - | 在线时长(秒) |
+| login_result | TINYINT | - | NOT NULL | 1 | 登录结果(0-失败,1-成功) |
+| fail_reason | VARCHAR | 200 | NULL | - | 失败原因 |
+| token | VARCHAR | 500 | NULL | - | 登录令牌(脱敏) |
+| refresh_count | INT | - | NOT NULL | 0 | 令牌刷新次数 |
+| is_forced_logout | TINYINT | - | NOT NULL | 0 | 是否强制登出(0-否,1-是) |
+| risk_level | TINYINT | - | NOT NULL | 0 | 风险级别(0-正常,1-低风险,2-中风险,3-高风险) |
+| remark | VARCHAR | 500 | NULL | - | 备注 |
+| create_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 创建时间 |
+| update_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 更新时间 |
+
+**索引设计**:
+- PRIMARY KEY (`id`)
+- KEY `idx_log_login_user` (`user_id`)
+- KEY `idx_log_login_username` (`username`)
+- KEY `idx_log_login_ip` (`login_ip`)
+- KEY `idx_log_login_time` (`login_time`)
+- KEY `idx_log_login_result` (`login_result`)
+- KEY `idx_log_login_risk` (`risk_level`)
+- KEY `idx_log_login_session` (`session_id`)
+
+### 7. log_error (错误日志表)
+
+**表说明**: 系统异常和错误记录，支持问题定位和系统监控
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 注释 |
+|--------|----------|------|----------|---------|------|
+| id | BIGINT | - | NOT NULL | - | 主键ID |
+| trace_id | VARCHAR | 32 | NULL | - | 请求追踪ID |
+| error_id | VARCHAR | 50 | NULL | - | 错误ID |
+| error_type | VARCHAR | 50 | NOT NULL | - | 错误类型(SYSTEM,BUSINESS,NETWORK,DATABASE,THIRD_PARTY) |
+| error_level | VARCHAR | 20 | NOT NULL | 'ERROR' | 错误级别(DEBUG,INFO,WARN,ERROR,FATAL) |
+| error_code | VARCHAR | 50 | NULL | - | 错误代码 |
+| error_message | TEXT | - | NOT NULL | - | 错误信息 |
+| exception_class | VARCHAR | 200 | NULL | - | 异常类名 |
+| stack_trace | LONGTEXT | - | NULL | - | 堆栈信息 |
+| user_id | BIGINT | - | NULL | - | 用户ID |
+| username | VARCHAR | 50 | NULL | - | 用户名 |
+| request_method | VARCHAR | 10 | NULL | - | 请求方法 |
+| request_url | VARCHAR | 500 | NULL | - | 请求URL |
+| request_params | TEXT | - | NULL | - | 请求参数 |
+| request_ip | VARCHAR | 50 | NULL | - | 请求IP |
+| user_agent | VARCHAR | 500 | NULL | - | 用户代理 |
+| module_name | VARCHAR | 50 | NULL | - | 模块名称 |
+| class_name | VARCHAR | 200 | NULL | - | 类名 |
+| method_name | VARCHAR | 100 | NULL | - | 方法名 |
+| line_number | INT | - | NULL | - | 错误行号 |
+| server_name | VARCHAR | 100 | NULL | - | 服务器名称 |
+| server_ip | VARCHAR | 50 | NULL | - | 服务器IP |
+| thread_name | VARCHAR | 100 | NULL | - | 线程名称 |
+| error_count | INT | - | NOT NULL | 1 | 错误次数 |
+| first_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 首次发生时间 |
+| last_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 最后发生时间 |
+| is_resolved | TINYINT | - | NOT NULL | 0 | 是否已解决(0-未解决,1-已解决) |
+| resolve_time | DATETIME | - | NULL | - | 解决时间 |
+| resolve_by | BIGINT | - | NULL | - | 解决人ID |
+| resolve_note | TEXT | - | NULL | - | 解决说明 |
+| notify_status | TINYINT | - | NOT NULL | 0 | 通知状态(0-未通知,1-已通知,2-通知失败) |
+| status | TINYINT | - | NOT NULL | 1 | 状态(0-忽略,1-正常,2-关注) |
+| create_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 创建时间 |
+| update_time | DATETIME | - | NOT NULL | CURRENT_TIMESTAMP | 更新时间 |
+
+**索引设计**:
+- PRIMARY KEY (`id`)
+- KEY `idx_log_error_type` (`error_type`)
+- KEY `idx_log_error_level` (`error_level`)
+- KEY `idx_log_error_code` (`error_code`)
+- KEY `idx_log_error_user` (`user_id`)
+- KEY `idx_log_error_time` (`create_time`)
+- KEY `idx_log_error_resolved` (`is_resolved`)
+- KEY `idx_log_error_trace` (`trace_id`)
+- KEY `idx_log_error_count` (`error_count`)
+- KEY `idx_log_error_first_time` (`first_time`)
 
 ---
 
 ## 🔧 数据库约束说明
 
 ### 外键约束
+
+#### Stage 1 外键约束
 - sys_user_role.user_id → sys_user.id
 - sys_user_role.role_id → sys_role.id
 - sys_role_permission.role_id → sys_role.id
@@ -368,6 +653,15 @@
 - sys_permission.parent_id → sys_permission.id
 - sys_menu.parent_id → sys_menu.id
 - sys_user_social.user_id → sys_user.id
+
+#### Stage 2 外键约束
+- file_info.storage_id → file_storage.id
+- file_relation.file_id → file_info.id
+- file_version.file_id → file_info.id
+- log_operation.user_id → sys_user.id
+- log_login.user_id → sys_user.id
+- log_error.user_id → sys_user.id
+- log_error.resolve_by → sys_user.id
 
 ### 唯一约束
 - 用户名、邮箱、手机号全局唯一
@@ -384,4 +678,4 @@
 **文档版本**: v1.0  
 **创建时间**: 2025-01-07  
 **维护人员**: SparkFan  
-**更新记录**: 初始版本创建，完成Stage 1表结构设计 
+**更新记录**: 初始版本创建，完成Stage 1、Stage 2表结构设计 

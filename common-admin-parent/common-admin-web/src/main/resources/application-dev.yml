@@ -1,6 +1,8 @@
 # 开发环境配置
 server:
   port: 8080
+  servlet:
+    context-path: /api
 
 spring:
   # 数据源配置
@@ -15,7 +17,8 @@ spring:
       stat-view-servlet:
         enabled: true
         login-username: admin
-        login-password: 123456
+        login-password: admin123
+        allow: 127.0.0.1,192.168.0.0/16
 
   # Redis配置
   data:
@@ -24,6 +27,13 @@ spring:
       port: 6379
       password: 
       database: 0
+
+  # 邮件配置(开发环境)
+  mail:
+    host: smtp.qq.com
+    username: dev@example.com
+    password: dev-password
+    port: 587
 
   # 开发工具配置
   devtools:
@@ -45,8 +55,11 @@ mybatis-plus:
 logging:
   level:
     com.common: debug
-    com.common.mapper: debug
-    root: info
+    org.springframework.security: debug
+    org.springframework.web: debug
+    com.baomidou.mybatisplus: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
 
 # Sa-Token配置
 sa-token:
@@ -59,9 +72,27 @@ sa-token:
 knife4j:
   enable: true
   setting:
-    # 开发环境启用调试模式
-    enable-debug: true
-    # 启用SwaggerBootstrapUi增强
-    enable-swagger-bootstrap-ui: true
-    # 启用Knife4j增强
-    enable-knife4j: true
+    language: zh_cn
+    enable-version: true
+    enable-reload-cache-parameter: true
+    enable-after-script: true
+    enable-filter-multipart-apis: false
+    enable-filter-multipart-api-method-type: POST
+    enable-request-cache: true
+    enable-host-text: localhost:8080
+
+# 系统配置(开发环境)
+common:
+  # 开发环境文件上传路径
+  upload-path: D:/temp/upload/
+  avatar-path: D:/temp/avatar/
+  # 开启验证码
+  captcha-enabled: false
+  # 开发环境配置
+  dev-mode: true
+  # 允许的跨域源
+  cors-origins: 
+    - http://localhost:3000
+    - http://localhost:8000
+    - http://127.0.0.1:3000
+    - http://127.0.0.1:8000

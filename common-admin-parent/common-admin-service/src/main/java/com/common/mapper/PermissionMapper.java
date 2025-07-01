@@ -67,7 +67,7 @@ public interface PermissionMapper extends BaseMapper<SysPermission> {
      * @param userId 用户ID
      * @return 菜单权限列表
      */
-    List<PermissionTreeVO> selectMenuPermissionsByUserId(@Param("userId") Long userId);
+    List<SysPermission> selectMenuPermissionsByUserId(@Param("userId") Long userId);
 
     /**
      * 根据用户ID查询按钮权限代码列表
@@ -75,7 +75,7 @@ public interface PermissionMapper extends BaseMapper<SysPermission> {
      * @param userId 用户ID
      * @return 按钮权限代码列表
      */
-    List<String> selectButtonPermissionsByUserId(@Param("userId") Long userId);
+    List<SysPermission> selectButtonPermissionsByUserId(@Param("userId") Long userId);
 
     /**
      * 检查权限编码是否存在（排除指定ID）
@@ -100,7 +100,7 @@ public interface PermissionMapper extends BaseMapper<SysPermission> {
      * @param parentId 父权限ID
      * @return 子权限列表
      */
-    List<SysPermission> selectChildrenByParentId(@Param("parentId") Long parentId);
+    List<SysPermission> selectPermissionsByParentId(@Param("parentId") Long parentId);
 
     /**
      * 根据权限类型查询权限列表
@@ -123,4 +123,11 @@ public interface PermissionMapper extends BaseMapper<SysPermission> {
     int updateStatusBatch(@Param("permissionIds") List<Long> permissionIds, 
                          @Param("status") Integer status, 
                          @Param("updateBy") Long updateBy);
+
+    /**
+     * 查询所有权限（用于构建权限树）
+     *
+     * @return 权限列表
+     */
+    List<SysPermission> selectAllPermissions();
 } 

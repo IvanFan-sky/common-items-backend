@@ -8,8 +8,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 /**
- * @Description 角色权限关联数据访问层，处理角色权限关联的数据库操作
- * @Date 2025/1/7 18:16
+ * @Description 角色权限关联Mapper接口
+ * @Date 2025/1/8 9:30
  * @Author SparkFan
  */
 @Mapper
@@ -19,7 +19,7 @@ public interface RolePermissionMapper extends BaseMapper<SysRolePermission> {
      * 根据角色ID删除角色权限关联
      *
      * @param roleId 角色ID
-     * @return 删除数量
+     * @return 删除记录数
      */
     int deleteByRoleId(@Param("roleId") Long roleId);
 
@@ -27,7 +27,7 @@ public interface RolePermissionMapper extends BaseMapper<SysRolePermission> {
      * 根据权限ID删除角色权限关联
      *
      * @param permissionId 权限ID
-     * @return 删除数量
+     * @return 删除记录数
      */
     int deleteByPermissionId(@Param("permissionId") Long permissionId);
 
@@ -35,7 +35,7 @@ public interface RolePermissionMapper extends BaseMapper<SysRolePermission> {
      * 批量插入角色权限关联
      *
      * @param rolePermissions 角色权限关联列表
-     * @return 插入数量
+     * @return 插入记录数
      */
     int insertBatch(@Param("rolePermissions") List<SysRolePermission> rolePermissions);
 
@@ -56,27 +56,19 @@ public interface RolePermissionMapper extends BaseMapper<SysRolePermission> {
     List<Long> selectRoleIdsByPermissionId(@Param("permissionId") Long permissionId);
 
     /**
-     * 检查角色权限关联是否存在
-     *
-     * @param roleId 角色ID
-     * @param permissionId 权限ID
-     * @return 是否存在
-     */
-    boolean existsRolePermission(@Param("roleId") Long roleId, @Param("permissionId") Long permissionId);
-
-    /**
-     * 批量删除角色权限关联
+     * 根据角色ID列表查询权限ID列表
      *
      * @param roleIds 角色ID列表
-     * @return 删除数量
+     * @return 权限ID列表
      */
-    int deleteByRoleIds(@Param("roleIds") List<Long> roleIds);
+    List<Long> selectPermissionIdsByRoleIds(@Param("roleIds") List<Long> roleIds);
 
     /**
-     * 批量删除权限角色关联
+     * 检查角色是否拥有指定权限
      *
-     * @param permissionIds 权限ID列表
-     * @return 删除数量
+     * @param roleId       角色ID
+     * @param permissionId 权限ID
+     * @return 是否存在关联
      */
-    int deleteByPermissionIds(@Param("permissionIds") List<Long> permissionIds);
+    boolean existsRolePermission(@Param("roleId") Long roleId, @Param("permissionId") Long permissionId);
 } 

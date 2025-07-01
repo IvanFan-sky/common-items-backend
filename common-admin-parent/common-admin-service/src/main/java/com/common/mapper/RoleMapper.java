@@ -12,8 +12,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 /**
- * @Description 角色数据访问层，处理角色相关的数据库操作
- * @Date 2025/1/7 18:16
+ * @Description 角色Mapper接口
+ * @Date 2025/1/8 9:30
  * @Author SparkFan
  */
 @Mapper
@@ -22,9 +22,9 @@ public interface RoleMapper extends BaseMapper<SysRole> {
     /**
      * 分页查询角色列表
      *
-     * @param page 分页对象
+     * @param page     分页对象
      * @param queryDTO 查询条件
-     * @return 角色分页数据
+     * @return 角色VO分页结果
      */
     IPage<RoleVO> selectRolePage(Page<RoleVO> page, @Param("query") RoleQueryDTO queryDTO);
 
@@ -32,7 +32,7 @@ public interface RoleMapper extends BaseMapper<SysRole> {
      * 根据角色编码查询角色
      *
      * @param roleCode 角色编码
-     * @return 角色信息
+     * @return 角色实体
      */
     SysRole selectByRoleCode(@Param("roleCode") String roleCode);
 
@@ -45,32 +45,6 @@ public interface RoleMapper extends BaseMapper<SysRole> {
     List<SysRole> selectRolesByUserId(@Param("userId") Long userId);
 
     /**
-     * 查询角色下的用户数量
-     *
-     * @param roleId 角色ID
-     * @return 用户数量
-     */
-    Integer selectUserCountByRoleId(@Param("roleId") Long roleId);
-
-    /**
-     * 检查角色编码是否存在（排除指定ID）
-     *
-     * @param roleCode 角色编码
-     * @param excludeId 排除的角色ID
-     * @return 是否存在
-     */
-    boolean existsRoleCode(@Param("roleCode") String roleCode, @Param("excludeId") Long excludeId);
-
-    /**
-     * 检查角色名称是否存在（排除指定ID）
-     *
-     * @param roleName 角色名称
-     * @param excludeId 排除的角色ID
-     * @return 是否存在
-     */
-    boolean existsRoleName(@Param("roleName") String roleName, @Param("excludeId") Long excludeId);
-
-    /**
      * 根据状态查询角色列表
      *
      * @param status 状态
@@ -79,12 +53,38 @@ public interface RoleMapper extends BaseMapper<SysRole> {
     List<SysRole> selectRolesByStatus(@Param("status") Integer status);
 
     /**
+     * 检查角色编码是否存在
+     *
+     * @param roleCode  角色编码
+     * @param excludeId 排除的角色ID
+     * @return 是否存在
+     */
+    boolean existsRoleCode(@Param("roleCode") String roleCode, @Param("excludeId") Long excludeId);
+
+    /**
+     * 检查角色名称是否存在
+     *
+     * @param roleName  角色名称
+     * @param excludeId 排除的角色ID
+     * @return 是否存在
+     */
+    boolean existsRoleName(@Param("roleName") String roleName, @Param("excludeId") Long excludeId);
+
+    /**
+     * 根据角色ID查询关联的用户数量
+     *
+     * @param roleId 角色ID
+     * @return 用户数量
+     */
+    Integer selectUserCountByRoleId(@Param("roleId") Long roleId);
+
+    /**
      * 批量更新角色状态
      *
-     * @param roleIds 角色ID列表
-     * @param status 状态
-     * @param updateBy 更新者ID
-     * @return 更新数量
+     * @param roleIds  角色ID列表
+     * @param status   状态
+     * @param updateBy 更新人
+     * @return 更新记录数
      */
     int updateStatusBatch(@Param("roleIds") List<Long> roleIds, 
                          @Param("status") Integer status, 

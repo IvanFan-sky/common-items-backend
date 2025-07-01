@@ -11,6 +11,7 @@ import com.common.core.dto.UserRoleAssignDTO;
 import com.common.core.entity.SysRole;
 import com.common.core.entity.SysRolePermission;
 import com.common.core.entity.SysUserRole;
+import com.common.core.mapper.RoleConvertMapper;
 import com.common.core.vo.PageResult;
 import com.common.core.vo.RoleDetailVO;
 import com.common.core.vo.RoleVO;
@@ -20,7 +21,6 @@ import com.common.mapper.UserRoleMapper;
 import com.common.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -43,16 +43,15 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, SysRole> implements
     private final RoleMapper roleMapper;
     private final UserRoleMapper userRoleMapper;
     private final RolePermissionMapper rolePermissionMapper;
+    private final RoleConvertMapper convertMapper;
 
     @Override
     public PageResult<RoleVO> getRolePage(RoleQueryDTO queryDTO) {
         Page<RoleVO> page = new Page<>(queryDTO.getCurrent(), queryDTO.getSize());
         IPage<RoleVO> pageResult = roleMapper.selectRolePage(page, queryDTO);
         
-        // 填充状态和数据范围描述
-        pageResult.getRecords().forEach(this::fillRoleDisplayText);
-        
-        return new PageResult<>(pageResult.getRecords(), pageResult.getTotal());
+        return new PageResult<>(pageResult.getCurrent(), pageResult.getSize(), 
+                               pageResult.getTotal(), pageResult.getRecords());
     }
 
     @Override
@@ -62,11 +61,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, SysRole> implements
             throw new RuntimeException("角色不存在");
         }
         
-        RoleDetailVO detailVO = new RoleDetailVO();
-        BeanUtils.copyProperties(role, detailVO);
-        
-        // 填充状态和数据范围描述
-        fillRoleDetailDisplayText(detailVO);
+        RoleDetailVO detailVO = convertMapper.toRoleDetailVO(role);
         
         // 填充权限信息
         List<Long> permissionIds = rolePermissionMapper.selectPermissionIdsByRoleId(roleId);
@@ -92,8 +87,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, SysRole> implements
             throw new RuntimeException("角色名称已存在");
         }
         
-        SysRole role = new SysRole();
-        BeanUtils.copyProperties(createDTO, role);
+        SysRole role = convertMapper.createDTOToEntity(createDTO);
         role.setCreateBy(createBy);
         role.setCreateTime(LocalDateTime.now());
         role.setStatus(1); // 默认启用
@@ -127,19 +121,19 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, SysRole> implements
             throw new RuntimeException("角色名称已存在");
         }
         
-        SysRole role = new SysRole();
-        BeanUtils.copyProperties(updateDTO, role);
-        role.setUpdateBy(updateBy);
-        role.setUpdateTime(LocalDateTime.now());
+        // 使用MapStruct更新角色信息
+        convertMapper.updateEntityFromDTO(updateDTO, existingRole);
+        existingRole.setUpdateBy(updateBy);
+        existingRole.setUpdateTime(LocalDateTime.now());
         
-        updateById(role);
+        updateById(existingRole);
         
         // 更新权限分配
         if (updateDTO.getPermissionIds() != null) {
-            assignRolePermissions(role.getId(), updateDTO.getPermissionIds(), updateBy);
+            assignRolePermissions(existingRole.getId(), updateDTO.getPermissionIds(), updateBy);
         }
         
-        log.info("更新角色成功，角色ID：{}，角色名称：{}", role.getId(), role.getRoleName());
+        log.info("更新角色成功，角色ID：{}，角色名称：{}", existingRole.getId(), existingRole.getRoleName());
         return true;
     }
 
@@ -267,15 +261,13 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, SysRole> implements
     @Override
     public List<RoleVO> getRolesByUserId(Long userId) {
         List<SysRole> roles = roleMapper.selectRolesByUserId(userId);
-        return roles.stream()
-                .map(this::convertToRoleVO)
-                .collect(Collectors.toList());
+        return convertMapper.toRoleVOList(roles);
     }
 
     @Override
     public RoleVO getRoleByCode(String roleCode) {
         SysRole role = roleMapper.selectByRoleCode(roleCode);
-        return role != null ? convertToRoleVO(role) : null;
+        return role != null ? convertMapper.toRoleVO(role) : null;
     }
 
     @Override
@@ -291,58 +283,8 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, SysRole> implements
     @Override
     public List<RoleVO> getEnabledRoles() {
         List<SysRole> roles = roleMapper.selectRolesByStatus(1);
-        return roles.stream()
-                .map(this::convertToRoleVO)
-                .collect(Collectors.toList());
+        return convertMapper.toRoleVOList(roles);
     }
 
-    /**
-     * 转换为RoleVO
-     */
-    private RoleVO convertToRoleVO(SysRole role) {
-        RoleVO roleVO = new RoleVO();
-        BeanUtils.copyProperties(role, roleVO);
-        fillRoleDisplayText(roleVO);
-        return roleVO;
-    }
 
-    /**
-     * 填充角色显示文本
-     */
-    private void fillRoleDisplayText(RoleVO roleVO) {
-        // 状态描述
-        roleVO.setStatusText(roleVO.getStatus() == 1 ? "启用" : "禁用");
-        
-        // 数据范围描述
-        if (roleVO.getDataScope() != null) {
-            switch (roleVO.getDataScope()) {
-                case 1 -> roleVO.setDataScopeText("全部数据权限");
-                case 2 -> roleVO.setDataScopeText("自定数据权限");
-                case 3 -> roleVO.setDataScopeText("本部门数据权限");
-                case 4 -> roleVO.setDataScopeText("本部门及以下数据权限");
-                case 5 -> roleVO.setDataScopeText("仅本人数据权限");
-                default -> roleVO.setDataScopeText("未知");
-            }
-        }
-    }
-
-    /**
-     * 填充角色详情显示文本
-     */
-    private void fillRoleDetailDisplayText(RoleDetailVO detailVO) {
-        // 状态描述
-        detailVO.setStatusText(detailVO.getStatus() == 1 ? "启用" : "禁用");
-        
-        // 数据范围描述
-        if (detailVO.getDataScope() != null) {
-            switch (detailVO.getDataScope()) {
-                case 1 -> detailVO.setDataScopeText("全部数据权限");
-                case 2 -> detailVO.setDataScopeText("自定数据权限");
-                case 3 -> detailVO.setDataScopeText("本部门数据权限");
-                case 4 -> detailVO.setDataScopeText("本部门及以下数据权限");
-                case 5 -> detailVO.setDataScopeText("仅本人数据权限");
-                default -> detailVO.setDataScopeText("未知");
-            }
-        }
-    }
 } 

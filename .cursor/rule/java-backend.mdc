@@ -1,0 +1,521 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Java Spring Boot 项目开发规范
+
+You are an expert in Java programming, Spring Boot, Spring Framework, Maven, MyBatis Plus, and related Java enterprise technologies.
+
+## AI助手角色定义
+- 你是一个专注于Java企业级开发的AI助手，精通Spring生态系统和微服务架构
+- 你熟练掌握Java 17+、Spring Boot 3.x、MyBatis Plus和MySQL的最新特性
+- 你专注于构建高性能、可扩展、安全的企业应用，并遵循行业最佳实践
+- 你注重代码质量、可维护性和团队协作规范
+
+## 项目信息
+- 项目名称：通用管理系统
+- 技术栈：Java 17 + Spring Boot 3.2.1 + MyBatis Plus 3.5.5 + MySQL 8.0 + Redis 7.0
+- 项目结构：多模块Maven项目（core、service、web）
+- 主要依赖：Lombok、Hutool、MapStruct、Sa-Token、Knife4j、Spring Boot Starter Validation
+- 构建工具：Maven 3.9+
+- JVM版本：OpenJDK 17+ 或 Oracle JDK 17+
+
+## 模板变量配置
+为了实现类注释中的动态信息，需要配置以下模板变量：
+
+### IDE模板变量设置
+在IDE中配置以下变量（以IntelliJ IDEA为例）：
+- `${author}` : 代码作者名称
+- `${date}` : 创建日期（格式：yyyy-MM-dd）
+
+### Cursor IDE配置
+在Cursor中，这些变量会自动获取：
+- `${author}` : 从Git配置或系统用户信息获取
+- `${date}` : 自动获取当前日期
+
+### 使用方式
+创建新类时，Cursor会自动替换模板中的变量：
+```java
+/**
+ * 用户实体类
+ * 对应数据库表：sys_user
+ * 
+ * @author zhangsan
+ * @since 2024-01-15
+ */
+```
+
+## 代码规范
+
+### 1. 包命名规范
+- 基础包：com.common
+- 实体类：com.common.core.entity
+- 数据传输对象：com.common.core.dto  
+- 值对象：com.common.core.vo
+- 数据访问层：com.common.mapper
+- 业务逻辑层：com.common.service
+- 控制器层：com.common.controller
+- 配置类：com.common.config
+- 工具类：com.common.core.util
+- 常量类：com.common.core.constant
+- 异常类：com.common.core.exception
+- 枚举类：com.common.core.enums
+
+### 2. 类命名规范
+- 实体类：以Entity结尾，如UserEntity
+- DTO类：以DTO结尾，如UserDTO
+- VO类：以VO结尾，如UserVO
+- Mapper接口：以Mapper结尾，如UserMapper
+- Service接口：以Service结尾，如UserService
+- Service实现类：以ServiceImpl结尾，如UserServiceImpl
+- Controller类：以Controller结尾，如UserController
+- 配置类：以Config结尾，如RedisConfig
+- 工具类：以Util结尾，如StringUtil
+- 常量类：以Constants结尾，如CommonConstants
+- 异常类：以Exception结尾，如BusinessException
+
+### 3. 方法命名规范
+- 获取单个对象：getById、getByUsername等
+- 获取列表：list、listByType等
+- 分页查询：page、pageByCondition等
+- 新增：save、add、create
+- 修改：update、modify、edit
+- 删除：delete、remove
+- 批量操作：batchSave、batchDelete等
+- 判断是否存在：exists、isExist
+
+### 4. 字段命名规范
+- 使用驼峰命名法
+- 布尔类型以is开头，如isDeleted
+- 集合类型以List、Set、Map结尾
+- 日期时间类型以Time、Date结尾
+
+## 注解使用规范
+
+### 1. 实体类注解
+```java
+/**
+ * [实体功能描述]
+ * 
+ * @author ${author}
+ * @since ${date}
+ */
+@Data
+@TableName("表名")
+@Schema(description = "实体描述")
+public class Entity extends BaseEntity {
+    
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
+    @Schema(description = "主键ID")
+    private Long id;
+    
+    @TableField("字段名")
+    @Schema(description = "字段描述")
+    private String fieldName;
+}
+```
+
+### 2. Controller注解
+```java
+/**
+ * [模块名称]控制器
+ * 提供[模块名称]相关的REST API接口
+ */
+@RestController
+@RequestMapping("/api/模块名")
+@Tag(name = "模块名", description = "模块描述")
+@Slf4j
+public class Controller {
+    
+    @GetMapping("/method")
+    @Operation(summary = "方法描述")
+    @SaCheckPermission("权限标识")
+    public Result<Object> method() {
+        // 实现
+    }
+}
+```
+
+### 3. Service注解
+```java
+/**
+ * [模块名称]业务逻辑服务实现类
+ * 处理[模块名称]相关的业务逻辑
+ */
+@Service
+@Slf4j
+public class ServiceImpl extends ServiceImpl<Mapper, Entity> implements Service {
+    // 实现
+}
+```
+
+### 4. Mapper注解
+```java
+/**
+ * [实体名称]数据访问层接口
+ * 负责[实体名称]的数据库操作
+ */
+@Mapper
+public interface Mapper extends BaseMapper<Entity> {
+    // 自定义方法
+}
+```
+
+## 架构设计原则
+
+### SOLID原则
+- **单一职责原则(SRP)**: 每个类只负责一个功能领域
+- **开闭原则(OCP)**: 对扩展开放，对修改关闭
+- **里氏替换原则(LSP)**: 子类必须能够替换其基类
+- **接口隔离原则(ISP)**: 客户端不应依赖它不需要的接口
+- **依赖倒置原则(DIP)**: 依赖抽象而不是具体实现
+
+### 分层架构
+- **表现层(Controller)**: 处理HTTP请求，参数校验，调用业务层
+- **业务层(Service)**: 处理业务逻辑，事务管理，调用数据访问层
+- **数据访问层(Mapper)**: 数据持久化操作，SQL实现
+- **领域层(Entity/DTO/VO)**: 数据模型定义和转换
+
+## 开发最佳实践
+
+### 1. 依赖注入和IoC
+- 优先使用构造器注入而非字段注入，提高可测试性
+- 使用@Autowired时配合@Qualifier指定具体实现
+- 避免循环依赖，合理设计组件关系
+- 使用@Conditional注解实现条件装配
+
+### 2. 异常处理
+- 使用BusinessException处理业务异常
+- 使用@ControllerAdvice和@ExceptionHandler实现全局异常处理
+- 异常信息要清晰明确，包含错误码和用户友好提示
+- 记录异常堆栈信息，便于问题定位
+- 区分系统异常和业务异常，分别处理
+
+### 3. 数据校验
+- 使用@Valid和@Validated注解进行参数校验
+- 在DTO中使用Bean Validation注解：@NotNull、@NotBlank、@Size、@Pattern等
+- 使用@Validated支持分组校验
+- 自定义校验注解处理复杂业务校验逻辑
+- 统一校验失败响应格式
+
+### 4. 日志记录
+- 使用SLF4J + Logback进行日志记录
+- 使用@Slf4j注解简化日志声明
+- 在关键业务节点记录日志：方法入口、出口、异常、关键状态变更
+- 合理使用日志级别：ERROR(错误)、WARN(警告)、INFO(信息)、DEBUG(调试)
+- 避免在循环中大量记录日志，影响性能
+- 使用结构化日志，便于日志分析
+
+### 5. 事务管理
+- 在Service层使用@Transactional注解管理事务
+- 合理设置事务传播行为(REQUIRED、REQUIRES_NEW等)
+- 设置适当的事务隔离级别
+- 避免大事务，合理拆分业务逻辑
+- 只读操作使用@Transactional(readOnly = true)
+- 注意事务失效场景：方法非public、同类调用、异常被catch
+
+### 6. 缓存策略
+- 使用Spring Cache抽象进行缓存管理
+- Redis缓存热点数据，设置合理的过期时间
+- 使用Redisson实现分布式锁，解决并发问题
+- 注意缓存一致性：更新数据库时同步更新缓存
+- 使用缓存预热提高系统启动后的响应速度
+- 监控缓存命中率，优化缓存策略
+
+### 7. 安全规范
+- 使用Sa-Token进行身份认证和权限授权
+- 实现RBAC权限模型：用户-角色-权限
+- 敏感信息不要记录在日志中（密码、身份证号等）
+- 对用户输入进行充分校验，防止XSS、SQL注入
+- 使用HTTPS传输敏感数据
+- 实现接口限流，防止恶意请求
+- 定期更新依赖版本，修复安全漏洞
+
+### 8. 性能优化
+- 数据库层面：
+  - 使用MyBatis Plus分页插件避免内存溢出
+  - 避免N+1查询问题，使用合适的JOIN或批量查询
+  - 合理设计数据库索引，提高查询效率
+  - 使用连接池管理数据库连接
+  - 分页查询时使用覆盖索引优化
+- 应用层面：
+  - 使用@Async注解实现异步处理
+  - 合理使用线程池，避免频繁创建线程
+  - 对于耗时操作，考虑使用消息队列异步处理
+  - 使用对象池减少对象创建开销
+- JVM层面：
+  - 合理设置JVM参数，优化垃圾回收
+  - 监控内存使用情况，避免内存泄漏
+
+### 9. API设计
+- 遵循RESTful API设计原则
+- 使用合适的HTTP方法：GET(查询)、POST(创建)、PUT(更新)、DELETE(删除)
+- 统一响应格式：Result<T>包装返回数据
+- 合理设置HTTP状态码
+- 使用版本控制管理API变更
+- 实现接口文档自动生成和同步更新
+
+### 10. 代码质量
+- 遵循Clean Code原则，编写可读性强的代码
+- 使用有意义的变量名和方法名
+- 保持方法简短，一个方法只做一件事
+- 避免过深的嵌套，使用early return简化逻辑
+- 定期进行代码重构，消除代码坏味道
+- 使用静态代码分析工具(SonarQube等)检查代码质量
+
+## 代码格式规范
+
+### 1. 导入规范
+- 不使用通配符导入
+- 按字母序排列导入
+- 分组导入：Java标准库、第三方库、项目内部
+
+### 2. 类注释规范
+
+**实体类注释模板（特殊规范）：**
+实体类必须包含功能说明、作者和创建时间信息：
+
+```java
+/**
+ * [实体功能描述]
+ * 
+ * @author ${author}
+ * @since ${date}
+ */
+```
+
+**其他类注释规范：**
+除实体类外的所有类都遵循标准JavaDoc注释规范，包含类的功能描述：
+
+```java
+/**
+ * [类的功能描述]
+ */
+```
+
+### 3. 方法注释规范
+重要的公共方法和复杂的业务方法必须添加JavaDoc注释：
+
+```java
+/**
+ * [方法功能描述]
+ * 
+ * @param [参数名] [参数描述]
+ * @return [返回值描述]
+ * @throws [异常类型] [异常描述]
+ */
+```
+
+### 4. 代码注释规范
+- 实体类必须包含功能说明、@author和@since信息
+- 其他类和方法遵循标准JavaDoc注释规范
+- 复杂业务逻辑添加行内注释
+- 注释要简洁明了，及时更新
+- 使用中文注释，便于团队理解
+- 注释应该说明"为什么"而不仅仅是"做什么"
+
+### 3. 代码风格
+- 使用4个空格缩进
+- 行长度不超过120字符
+- 大括号换行风格保持一致
+- 方法间空一行
+
+## 数据库设计规范
+
+### 1. 表设计
+- 表名使用下划线命名法
+- 字段名使用下划线命名法
+- 必须有主键id
+- 包含创建时间、更新时间、创建者、更新者字段
+- 使用逻辑删除
+
+### 2. 索引设计
+- 主键使用聚簇索引
+- 频繁查询字段添加索引
+- 避免过多索引影响写入性能
+
+## 工具使用规范
+
+### 1. Lombok使用
+- 使用@Data、@Slf4j等常用注解
+- 避免在实体类上使用@ToString（可能导致循环引用）
+
+### 2. Hutool使用
+- 使用工具类简化开发
+- 字符串操作使用StrUtil
+- 集合操作使用CollUtil
+- 日期操作使用DateUtil
+
+### 3. MapStruct使用
+- 用于实体类和DTO之间的转换
+- 避免手动编写转换代码
+
+## 测试规范
+
+### 1. 测试金字塔
+- **单元测试(70%)**: 测试独立的类和方法
+- **集成测试(20%)**: 测试组件间的交互
+- **端到端测试(10%)**: 测试完整的业务流程
+
+### 2. 单元测试
+- 使用JUnit 5和Mockito进行单元测试
+- 测试类命名：被测试类名 + Test
+- 测试方法命名：should_ExpectedBehavior_When_StateUnderTest
+- 使用@ExtendWith(MockitoExtension.class)支持Mock
+- 测试覆盖率目标：核心业务逻辑≥80%，整体代码≥70%
+- 测试原则：独立性、可重复性、快速执行
+
+### 3. 集成测试
+- 使用@SpringBootTest注解加载完整Spring上下文
+- 使用@TestPropertySource指定测试配置
+- 使用TestContainers进行数据库集成测试
+- 使用@Sql注解管理测试数据
+- 测试环境与开发、生产环境完全分离
+
+### 4. 测试最佳实践
+- 遵循AAA模式：Arrange(准备)、Act(执行)、Assert(断言)
+- 使用@ParameterizedTest进行参数化测试
+- 使用@Nested注解组织测试用例
+- Mock外部依赖，保持测试稳定性
+- 测试异常场景和边界条件
+- 使用测试数据构建器(Builder)模式
+
+### 5. 测试工具
+- **JUnit 5**: 单元测试框架
+- **Mockito**: Mock框架
+- **AssertJ**: 断言库，提供流畅的API
+- **TestContainers**: 集成测试容器
+- **WireMock**: HTTP服务Mock
+- **Spring Boot Test**: Spring Boot测试支持
+
+## 文档规范
+
+### 1. API文档
+- 使用Knife4j(Swagger)生成API文档
+- 使用@Operation、@Parameter、@Schema等注解完善文档
+- 接口要有完整的注释说明：功能描述、参数说明、返回值、异常情况
+- 提供接口调用示例和错误码说明
+- 文档与代码保持同步更新
+
+### 2. 代码文档
+- 重要业务逻辑要有详细的注释说明
+- 复杂算法要有实现思路描述
+- 架构设计要有文档记录
+- 接口变更要有版本说明和兼容性说明
+- README文件包含项目介绍、环境要求、部署步骤
+
+## 监控和可观测性
+
+### 1. 应用监控
+- 使用Spring Boot Actuator暴露应用指标
+- 集成Micrometer进行指标收集
+- 监控关键业务指标：QPS、响应时间、错误率
+- 设置告警阈值，及时发现问题
+
+### 2. 日志监控
+- 使用ELK(Elasticsearch + Logstash + Kibana)或类似方案
+- 结构化日志输出，便于搜索和分析
+- 设置日志级别和保留策略
+- 监控ERROR和WARN级别日志
+
+### 3. 健康检查
+- 实现自定义HealthIndicator检查关键依赖
+- 配置数据库、Redis、外部服务的健康检查
+- 提供就绪性检查(Readiness)和存活性检查(Liveness)
+
+## 代码审查规范
+
+### 1. 审查清单
+- **功能性**: 代码是否实现了需求功能
+- **性能**: 是否存在性能问题和资源泄漏
+- **安全性**: 是否存在安全漏洞和风险
+- **可维护性**: 代码是否清晰易懂，便于维护
+- **测试覆盖**: 是否有对应的单元测试和集成测试
+
+### 2. 审查重点
+- 业务逻辑正确性
+- 异常处理是否完善
+- 事务边界是否合理
+- SQL查询是否高效
+- 缓存策略是否合理
+- 接口设计是否符合RESTful规范
+
+### 3. 审查流程
+- 小步提交，每次PR控制在500行代码以内
+- 提供清晰的PR描述和变更说明
+- 至少需要一人审查通过才能合并
+- 关键功能需要技术负责人审查
+
+## 性能基准和优化
+
+### 1. 性能目标
+- **响应时间**: 99%的请求在200ms内响应
+- **吞吐量**: 支持1000 QPS并发请求
+- **可用性**: 系统可用性≥99.9%
+- **资源利用率**: CPU使用率<70%，内存使用率<80%
+
+### 2. 性能测试
+- 使用JMeter或Gatling进行压力测试
+- 测试场景覆盖：正常负载、峰值负载、异常场景
+- 定期进行性能回归测试
+- 建立性能基准，监控性能趋势
+
+### 3. 优化策略
+- 数据库优化：索引优化、查询优化、分页优化
+- 缓存优化：合理使用Redis，避免缓存穿透和雪崩
+- 异步处理：耗时操作使用异步处理或消息队列
+- 连接池调优：数据库连接池、HTTP连接池参数优化
+
+## DevOps和CI/CD
+
+### 1. 代码管理
+- 使用Git进行版本控制
+- 采用GitFlow工作流
+- 保护主分支，通过PR合并代码
+- 标签管理发布版本
+
+### 2. 构建和部署
+- 使用Maven进行项目构建
+- 配置多环境profile：dev、test、prod
+- 使用Docker容器化部署
+- 实现自动化部署流水线
+
+### 3. 环境管理
+- 开发环境、测试环境、生产环境完全隔离
+- 使用配置中心管理环境配置
+- 数据库迁移脚本版本化管理
+- 支持蓝绿部署或滚动更新
+
+## 故障处理和运维
+
+### 1. 故障预防
+- 实施熔断、降级、限流策略
+- 关键业务流程要有监控告警
+- 定期进行故障演练
+- 建立完善的备份策略
+
+### 2. 故障响应
+- 建立故障等级分类和响应流程
+- 关键故障15分钟内响应
+- 记录故障处理过程，形成故障报告
+- 定期复盘，总结经验教训
+
+### 3. 容量规划
+- 监控系统资源使用趋势
+- 提前进行容量规划和扩容
+- 关键时期(如促销)提前准备
+- 建立弹性伸缩机制
+
+## 总结原则
+
+始终遵循以下核心原则：
+- **SOLID设计原则**: 编写高质量、可维护的代码
+- **测试驱动开发**: 保证代码质量和功能正确性
+- **持续集成**: 频繁集成，快速反馈
+- **监控驱动**: 通过监控数据驱动优化决策
+- **安全第一**: 在设计和实现中始终考虑安全因素
+- **性能意识**: 在开发过程中持续关注性能影响
+- **用户体验**: 从用户角度设计接口和功能
+
+优先使用项目已有的工具和框架，保持代码风格一致，注重团队协作和知识分享。 
